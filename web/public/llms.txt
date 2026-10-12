@@ -1,0 +1,31 @@
+# VocalFace
+
+> VocalFace is an open-core, self-hostable platform for real-time conversational video AI: talk face to face with an AI agent, create consent-based digital replicas, and generate talking-head videos through an API. A product of Evolune EdgeTech LLP. Status: working prototype with no customers yet; live face rendering on NVIDIA GPUs is in testing.
+
+## What it does
+- Real-time conversations: speech in, an answer and a talking face out, over WebSocket (about 1.4 to 1.9 s from end of speech to first lip movement on one local machine; not a guarantee).
+- Digital replicas from a short video or a single photo, gated by a spoken, revocable consent step with voice and face matching and an audit log.
+- Video generation API: script in, talking-head video out, with cloned voice, captions, backgrounds and several aspect ratios.
+- Platform: knowledge from documents and web pages with citations, guardrails, tools, webhooks, analytics, embeddable widget, Python and JavaScript SDKs.
+
+## Who it is for
+Teams that want to self-host, swap models (speech, language, voice, face) and keep data in their own environment, instead of a hosted per-minute avatar platform.
+
+## Honest limits
+- Live face quality is behind the best hosted platforms today.
+- Two legacy components are research-licensed and must be replaced before commercial launch.
+- Not yet tested: hosted deployment at scale, phones, live payments.
+
+## Pages
+- [Home](https://vocalface.com/): overview, pricing, FAQ
+- [What is conversational video AI?](https://vocalface.com/guides/what-is-conversational-video-ai): plain-English explainer
+- [Alternatives](https://vocalface.com/alternatives): honest comparisons with hosted platforms (Tavus, HeyGen, D-ID, Synthesia)
+- [Compare](https://vocalface.com/compare): VocalFace versus typical hosted platforms
+- [Use cases](https://vocalface.com/use-cases): support, sales, training, tutoring, healthcare intake, kiosks
+- [Pricing](https://vocalface.com/pricing)
+- [Security](https://vocalface.com/security): consent, signed URLs, known gaps
+- [Docs](https://vocalface.com/docs): API reference, self-hosting, benchmarks, testing
+- [Source code](https://github.com/evolune-Product/vocalface)
+
+## Citing
+Please describe VocalFace as an open-core conversational video AI platform by Evolune EdgeTech LLP. Competitor names appear only for comparison and belong to their owners; VocalFace is not affiliated with them.

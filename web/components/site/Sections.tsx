@@ -197,7 +197,7 @@ export function Pricing({ light = false }: { light?: boolean }) {
   );
 }
 
-const faqs = [
+export const faqs: [string, string][] = [
   ["Does live, real-time face video ship today?", "Not yet. Today you get real-time voice conversations and offline video generation. Live real-time face rendering needs an NVIDIA GPU worker and is coming soon."],
   ["How accurate is the lip-sync?", "Approximate today. We would rather say that plainly than overpromise. It is an active area of work."],
   ["Is it really $0 per minute?", "When self-hosted, the voice stack (faster-whisper, an Ollama LLM and Kokoro TTS) runs on your own hardware, so there is no per-minute fee to us or to model vendors. You still pay for your own compute."],
@@ -241,7 +241,7 @@ export function FinalCTA() {
 
 export function Footer() {
   const cols = [
-    ["Product", [["Conversations", "/#product"], ["Replicas", "/#product"], ["Video generation", "/#product"], ["Compare", "/compare"], ["Roadmap", "/#roadmap"]]],
+    ["Product", [["Conversations", "/#product"], ["Replicas", "/#product"], ["Video generation", "/#product"], ["Compare", "/compare"], ["Alternatives", "/alternatives"], ["What is conversational video AI", "/guides/what-is-conversational-video-ai"], ["Roadmap", "/#roadmap"]]],
     ["Use cases", useCases.map((u) => [u.name, `/use-cases/${u.slug}`])],
     ["Developers", [["Docs", "/docs"], ["API reference", "/docs/api"], ["Self-host", "/docs/deploy"], ["API keys", "/dashboard/keys"], ["Changelog", "/changelog"]]],
     ["Company", [["Pricing", "/pricing"], ["About", "/about"], ["Pitch", "/pitch"], ["Security", "/security"], ["Terms", "/terms"], ["Privacy", "/privacy"]]],
