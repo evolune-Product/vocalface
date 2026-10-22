@@ -18,3 +18,13 @@ a:focus-visible,button:focus-visible,summary:focus-visible,input:focus-visible{o
   .glass{@apply border border-white/10 bg-white/[0.04] backdrop-blur-xl}
   .text-grad{@apply bg-vocalface-gradient bg-clip-text text-transparent}
 }
+
+/* the 3D orb fades in over its static glow once it has loaded (components/site/LazyOrb.tsx) */
+.orb-fade{animation:orb-fade .9s ease-out both}
+@keyframes orb-fade{from{opacity:0}to{opacity:1}}
+
+/* Hero entrance in pure CSS: it starts at first paint, so the headline is never held invisible until JavaScript loads
+   (framer-motion's Reveal did that and delayed Largest Contentful Paint by seconds on phones). */
+.hero-in{animation:hero-in .7s cubic-bezier(.22,1,.36,1) both}
+@keyframes hero-in{from{opacity:.01;transform:translateY(24px)}to{opacity:1;transform:none}}
+@media (prefers-reduced-motion: reduce){.hero-in,.orb-fade{animation:none}}

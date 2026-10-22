@@ -60,8 +60,9 @@ export default function Orb({ state = "idle", level = 0, className = "", autoCyc
     const el = host.current; if (!el) return;
     const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     let renderer: THREE.WebGLRenderer;
-    try { renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true, powerPreference: "high-performance" }); } catch { return; }
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    const small = window.innerWidth < 700;  // phones: points need no anti-aliasing, and 1.5x pixels is plenty
+    try { renderer = new THREE.WebGLRenderer({ alpha: true, antialias: !small, powerPreference: "high-performance" }); } catch { return; }
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, small ? 1.5 : 2));
     el.appendChild(renderer.domElement);
     renderer.domElement.style.cssText = "width:100%;height:100%;display:block";
     const scene = new THREE.Scene();

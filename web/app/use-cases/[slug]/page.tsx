@@ -22,13 +22,13 @@ export default function UseCasePage({ params }: { params: { slug: string } }) {
       <section className="relative overflow-hidden pb-16 pt-14 md:pb-24 md:pt-20">
         <div className="pointer-events-none absolute left-1/2 top-0 h-[420px] w-[800px] -translate-x-1/2 rounded-full bg-vocalface-violet/20 blur-[120px]" />
         <div className="relative mx-auto grid w-full max-w-7xl items-center gap-12 px-5 lg:grid-cols-2 [&>*]:min-w-0">
-          <Reveal>
+          <div className="hero-in">
             <Link href="/use-cases" className="text-sm text-gray-300 hover:text-white">&larr; All use cases</Link>
             <p className="eyebrow mt-6">{u.eyebrow}</p>
             <h1 className="mt-3 font-display text-5xl leading-[1.02] text-white md:text-6xl">{u.headline[0]}<em className="text-grad pr-1 italic">{u.headline[1]}</em>{u.headline[2]}</h1>
             <p className="mt-6 text-lg text-gray-300">{u.lead}</p>
             <div className="mt-8 flex flex-wrap gap-3"><Link href="/signup" className="btn-grad px-7 py-3.5 text-base">Build this free <ArrowRight size={16} /></Link><Link href="/docs" className="btn-ghost px-7 py-3.5 text-base">Read the docs</Link></div>
-          </Reveal>
+          </div>
           <Reveal delay={0.1} y={40}><UseCaseMock u={u} /></Reveal>
         </div>
       </section>

@@ -29,11 +29,11 @@ export function Backing() {
         <span className="hidden h-6 w-px bg-white/15 sm:block" aria-hidden />
         {badge
           ? <div className="flex items-center gap-3"><img src={badge} alt="NVIDIA Inception Program member" className="h-10 w-auto" /><p className="max-w-xs text-left text-xs text-gray-400">Member of the NVIDIA Inception program for startups. Membership does not imply endorsement by NVIDIA.</p></div>
-          : <p className="text-sm text-gray-300">Member of the <span className="font-semibold text-white">NVIDIA Inception</span> program for startups <span className="text-xs text-gray-500">(membership does not imply endorsement)</span></p>}
+          : <p className="text-sm text-gray-300">Member of the <span className="font-semibold text-white">NVIDIA Inception</span> program for startups <span className="text-xs text-gray-400">(membership does not imply endorsement)</span></p>}
         <span className="hidden h-6 w-px bg-white/15 sm:block" aria-hidden />
         {claude
           ? <div className="flex items-center gap-3"><img src={claude} alt="Claude for Startups" className="h-10 w-auto" /><p className="max-w-xs text-left text-xs text-gray-400">Part of Anthropic&apos;s Claude for Startups program. Participation does not imply endorsement by Anthropic.</p></div>
-          : <p className="text-sm text-gray-300">Part of Anthropic&apos;s <span className="font-semibold text-white">Claude for Startups</span> program <span className="text-xs text-gray-500">(participation does not imply endorsement)</span></p>}
+          : <p className="text-sm text-gray-300">Part of Anthropic&apos;s <span className="font-semibold text-white">Claude for Startups</span> program <span className="text-xs text-gray-400">(participation does not imply endorsement)</span></p>}
       </div>
     </section>
   );
