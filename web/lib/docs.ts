@@ -6,6 +6,7 @@ export const docPages = [
   { slug: "api", title: "API reference", blurb: "Every route: accounts, replicas, consent, personas, conversations, videos, billing, moderation." },
   { slug: "deploy", title: "Self-hosting", blurb: "Run the API, Ollama, workers and optional GPU box on your own machines." },
   { slug: "benchmarks", title: "Benchmarks", blurb: "Raw numbers from our local stack, including what did not work." },
+  { slug: "mcp", title: "MCP server", blurb: "Use VocalFace from Claude, Cursor and other AI assistants: personas, talk links, transcripts, videos." },
   { slug: "testing", title: "Testing", blurb: "How the platform is tested end to end." },
 ] as const;
 

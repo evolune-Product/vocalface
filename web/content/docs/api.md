@@ -28,6 +28,16 @@ Auth: header `x-api-key: mk_...` on everything except `/v1/signup`, `/v1/billing
 - WebSocket `/v1/conversations/{cid}/stream?api_key=`; close codes 4401 bad key, 4404 not found, 4402 ended/no credits
 - `GET /v1/playground` HTML test page (`?cid=&api_key=`)
 
+## Privacy controls and recordings
+- `GET /v1/personas/{pid}/privacy`, `PUT /v1/personas/{pid}/privacy` `{record_conversations?, announce_recording?, zero_data_retention?, ai_disclosure?: off|badge|spoken}`. Zero data retention wins over recording. Changes are written to the audit log.
+- `GET /v1/conversations/{cid}/recording` -> `{status: recording|processing|ready|error, kind: video|audio, duration_s, parts, recording_url?, captions_url?}` (signed links); `DELETE` removes it.
+- Files: `GET /v1/files/recordings/{cid}/recording.mp4|recording.m4a|captions.vtt`, signed links only (also in development).
+- The realtime `ready` event carries `ai_disclosure`, `recording` and `zero_data_retention`; VocalFace pages show an AI badge, a Recording flag and live captions.
+- Webhook `conversation.recording_ready`. Recordings need ffmpeg on the API server.
+
+## MCP server
+- `sdk/mcp`: `vocalface-mcp` (stdio) for Claude Code, Claude Desktop, Cursor and other MCP clients. See the MCP page.
+
 ## Videos
 - `POST /v1/videos` `{replica_id, script}`; `GET /v1/videos/{vid}`. Scripts should be passed through `safety.moderate_or_raise` (not yet wired into resources.py; see below).
 
@@ -47,4 +57,4 @@ Auth: header `x-api-key: mk_...` on everything except `/v1/signup`, `/v1/billing
 - `app.safety.enforce_rate_limit(acc.api_key, limit, window)` (in-process only).
 
 ## SDKs
-Python `sdk/python/vocalface_sdk` (`VocalFace(api_key, base_url)`), TypeScript `sdk/js` (`npm run build`), embed `sdk/embed/widget.js`.
+Python `sdk/python/vocalface_sdk` (`VocalFace(api_key, base_url)`), TypeScript `sdk/js` (`npm run build`), embed `sdk/embed/widget.js`, MCP server `sdk/mcp`.

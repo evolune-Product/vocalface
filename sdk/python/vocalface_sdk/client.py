@@ -105,6 +105,7 @@ class VocalFace:
         """options: participant_id, context, variables={...}, max_seconds, language"""
         return self._req("POST", "/conversations", json={"persona_id": persona_id, **options})
     def end_conversation(self, cid: str) -> dict: return self._req("POST", f"/conversations/{cid}/end")
+    def list_conversations(self) -> list: return self._req("GET", "/conversations")
 
     # videos
     def create_video(self, replica_id: str, script: str) -> dict:

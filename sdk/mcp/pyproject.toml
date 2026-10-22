@@ -1,0 +1,17 @@
+[project]
+name = "vocalface-mcp"
+version = "0.1.0"
+description = "MCP server for VocalFace: build and run real-time, face-to-face AI agents from Claude, Cursor or any MCP client"
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = ["mcp>=1.2", "vocalface-sdk"]
+
+[project.scripts]
+vocalface-mcp = "vocalface_mcp.server:main"
+
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools]
+packages = ["vocalface_mcp"]

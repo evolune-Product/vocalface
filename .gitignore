@@ -27,3 +27,5 @@ workers/SoulX-FlashHead/
 # OS and build noise
 .DS_Store
 *.tsbuildinfo
+build/
+*.egg-info/
