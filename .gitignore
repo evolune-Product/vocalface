@@ -23,3 +23,7 @@ workers/SoulX-FlashHead/
 # model trials (Ditto / EchoMimic V3)
 
 # Wan trial (code clone, venv, weights)
+
+# OS and build noise
+.DS_Store
+*.tsbuildinfo
