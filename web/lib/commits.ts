@@ -125,5 +125,10 @@ export const commits: [string, string, string][] = [
   "ede03ba",
   "2026-10-22",
   "Machine-readable AI-generated label in generated videos and recordings"
+ ],
+ [
+  "291b8fc",
+  "2026-10-22",
+  "Buyer's guide to real-time AI avatar APIs, four more comparison pages and this changelog as an RSS feed"
  ]
 ];
