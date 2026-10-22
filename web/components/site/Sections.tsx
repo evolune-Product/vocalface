@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { ArrowRight, BookOpen, Check, Cpu, Database, Headphones, Minus, ShieldCheck, Sparkles, Terminal, Video, Globe, GraduationCap, LifeBuoy, Briefcase, X, ChevronDown, Code2, Server, Gauge } from "lucide-react";
+import { ArrowRight, BookOpen, Check, Cpu, Database, Headphones, Minus, ShieldCheck, Sparkles, Terminal, Video, Globe, GraduationCap, LifeBuoy, Briefcase, X, ChevronDown, Code2, Server, Gauge, EyeOff, Bot } from "lucide-react";
 import LazyOrb from "./LazyOrb";
 import { TrademarkNote } from "./Partners";
 import Logo from "./Logo";
@@ -135,23 +135,23 @@ export function UseCases() {
 }
 
 export function Trust() {
-  const items = [[ShieldCheck, "Consent first", "Spoken verification phrase, revocable at any time, with an audit log."], [Sparkles, "Moderation", "Content checks run on scripts and conversations."], [Server, "Self-host", "Run the stack on your own machines. Your data stays yours."], [Gauge, "Honest limits", "Lip-sync is approximate today. Live face rendering needs GPU workers."]] as const;
+  const items = [[ShieldCheck, "Consent first", "Spoken verification phrase, revocable at any time, with an audit log."], [Sparkles, "Moderation", "Content checks run on scripts and conversations."], [Server, "Self-host", "Run the stack on your own machines. Your data stays yours."], [EyeOff, "Privacy controls", "Recording only when you switch it on, and announced. Zero data retention. An AI badge on every call."], [Gauge, "Honest limits", "Lip-sync is approximate today. Live face rendering needs GPU workers."]] as const;
   return (
     <section className="bg-ink py-20 md:py-28"><div className={wrap}>
       <Reveal><div className="max-w-3xl"><p className="eyebrow">Safety and honesty</p><div className="mt-3"><H2>Likeness is personal. <It>Treat it that way.</It></H2></div></div></Reveal>
-      <div className="mt-12 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">{items.map(([I, t, d], i) => <Reveal key={t} delay={i * 0.07}><div className="card h-full transition hover:border-vocalface-rose/50"><I className="text-vocalface-amber" size={24} /><h3 className="mt-4 text-lg font-medium text-white">{t}</h3><p className="mt-2 text-sm text-gray-300">{d}</p></div></Reveal>)}</div>
+      <div className="mt-12 grid gap-4 sm:grid-cols-2 lg:grid-cols-5">{items.map(([I, t, d], i) => <Reveal key={t} delay={i * 0.07}><div className="card h-full transition hover:border-vocalface-rose/50"><I className="text-vocalface-amber" size={24} /><h3 className="mt-4 text-lg font-medium text-white">{t}</h3><p className="mt-2 text-sm text-gray-300">{d}</p></div></Reveal>)}</div>
     </div></section>
   );
 }
 
 export function Developers() {
-  const pts = [[Terminal, "REST API", "Replicas, personas, conversations, videos."], [Code2, "Python and JS SDKs", "Thin clients over the same API."], [Globe, "Embed widget", "Put an agent on a page with one script."], [Server, "WebSocket stream", "/v1/conversations/{id}/stream"]] as const;
+  const pts = [[Terminal, "REST API", "Replicas, personas, conversations, videos."], [Code2, "Python and JS SDKs", "Thin clients over the same API."], [Globe, "Embed widget", "Put an agent on a page with one script."], [Server, "WebSocket stream", "/v1/conversations/{id}/stream"], [Bot, "MCP server", "Let Claude, Cursor or any MCP client build and run agents."]] as const;
   return (
     <section id="developers" className="bg-ink-2 py-20 md:py-32"><div className={`${wrap} grid items-center gap-12 lg:grid-cols-2 [&>*]:min-w-0`}>
       <Reveal><p className="eyebrow">For developers</p><div className="mt-3"><H2>Four calls from nothing to a <It>talking agent</It></H2></div>
         <p className="mt-5 text-gray-300 md:text-lg">Authenticate with an x-api-key header. Create a replica, a persona, then start a conversation and connect to its stream.</p>
         <ol className="mt-6 space-y-2 font-mono text-sm text-gray-200">{["POST /v1/replicas", "POST /v1/personas", "POST /v1/conversations", "WS   /v1/conversations/{id}/stream?api_key="].map((s, i) => <li key={s} className="flex gap-3"><span className="text-vocalface-rose">{i + 1}</span><span className="break-all">{s}</span></li>)}</ol>
-        <div className="mt-8 grid gap-3 sm:grid-cols-2">{pts.map(([I, t, d]) => <div key={t} className="flex gap-3 rounded-xl border border-white/10 p-4"><I size={20} className="mt-0.5 shrink-0 text-vocalface-cyan" /><div><p className="text-sm font-medium text-white">{t}</p><p className="text-xs text-gray-400">{d}</p></div></div>)}</div>
+        <div className="mt-8 grid gap-3 sm:grid-cols-2">{pts.map(([I, t, d], i) => <div key={t} className={`flex gap-3 rounded-xl border border-white/10 p-4 ${i === pts.length - 1 && pts.length % 2 ? "sm:col-span-2" : ""}`}><I size={20} className="mt-0.5 shrink-0 text-vocalface-cyan" /><div><p className="text-sm font-medium text-white">{t}</p><p className="text-xs text-gray-400">{d}</p></div></div>)}</div>
         <div className="mt-8 flex flex-wrap gap-3"><Link href="/dashboard/keys" className="btn-grad">Get an API key <ArrowRight size={16} /></Link><Link href="/docs" className="btn-ghost">Read the docs</Link></div></Reveal>
       <Reveal delay={0.1} y={40}><CodeMock /></Reveal>
     </div></section>
@@ -205,6 +205,9 @@ export const faqs: [string, string][] = [
   ["Can I use my own models?", "The STT, LLM and TTS stages are separate, so they can be swapped. Local models work out of the box."],
   ["What does overage cost?", "Starter is $0.20 per minute past 120 minutes. Pro is $0.15 per minute past 600. Top-ups are $12 for 60 minutes, $50 for 300 and $150 for 1,000."],
   ["Is the 1.4s figure a guarantee?", "No. It is what we measured locally for time to first audio. Your hardware and model choices change it."],
+  ["Can I record conversations?", "Yes, per persona and off by default. The agent announces it, the page shows a Recording flag, and you get a video (or audio) file with captions through signed links. Zero data retention turns recording off."],
+  ["Does VocalFace tell people they are talking to an AI?", "Yes. Every call page shows an AI badge by default, and you can have the agent say so before its greeting. Generated videos and recordings carry a machine-readable AI-generated label in their metadata."],
+  ["Can I use VocalFace from Claude or Cursor?", "Yes. The VocalFace MCP server lets Claude, Cursor or any MCP client create personas, open a face-to-face talk link, read transcripts and make videos."],
 ];
 export function FAQ() {
   return (
@@ -241,7 +244,7 @@ export function FinalCTA() {
 
 export function Footer() {
   const cols = [
-    ["Product", [["Conversations", "/#product"], ["Replicas", "/#product"], ["Video generation", "/#product"], ["Compare", "/compare"], ["Alternatives", "/alternatives"], ["What is conversational video AI", "/guides/what-is-conversational-video-ai"], ["Roadmap", "/#roadmap"]]],
+    ["Product", [["Conversations", "/#product"], ["Replicas", "/#product"], ["Video generation", "/#product"], ["Compare", "/compare"], ["Alternatives", "/alternatives"], ["What is conversational video AI", "/guides/what-is-conversational-video-ai"], ["Choosing an AI avatar API", "/guides/choosing-a-real-time-ai-avatar-api"], ["Roadmap", "/#roadmap"]]],
     ["Use cases", useCases.map((u) => [u.name, `/use-cases/${u.slug}`])],
     ["Developers", [["Docs", "/docs"], ["API reference", "/docs/api"], ["Self-host", "/docs/deploy"], ["API keys", "/dashboard/keys"], ["Changelog", "/changelog"]]],
     ["Company", [["Pricing", "/pricing"], ["About", "/about"], ["Pitch", "/pitch"], ["Security", "/security"], ["Terms", "/terms"], ["Privacy", "/privacy"]]],

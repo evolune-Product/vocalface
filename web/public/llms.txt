@@ -7,6 +7,8 @@
 - Digital replicas from a short video or a single photo, gated by a spoken, revocable consent step with voice and face matching and an audit log.
 - Video generation API: script in, talking-head video out, with cloned voice, captions, backgrounds and several aspect ratios.
 - Platform: knowledge from documents and web pages with citations, guardrails, tools, webhooks, analytics, embeddable widget, Python and JavaScript SDKs.
+- Privacy controls per persona: opt-in conversation recordings (video or audio, with WebVTT captions, announced to the participant), zero data retention (no transcript, summary, memory or recording kept), and AI disclosure (an on-screen AI badge by default, optionally spoken), following the transparency idea in Article 50 of the EU AI Act. Generated videos and recordings carry a machine-readable AI-generated metadata label.
+- MCP server: Claude, Cursor or any MCP client can create personas, add knowledge, open a face-to-face talk link, read transcripts and make videos.
 
 ## Who it is for
 Teams that want to self-host, swap models (speech, language, voice, face) and keep data in their own environment, instead of a hosted per-minute avatar platform.
@@ -19,7 +21,10 @@ Teams that want to self-host, swap models (speech, language, voice, face) and ke
 ## Pages
 - [Home](https://vocalface.com/): overview, pricing, FAQ
 - [What is conversational video AI?](https://vocalface.com/guides/what-is-conversational-video-ai): plain-English explainer
-- [Alternatives](https://vocalface.com/alternatives): honest comparisons with hosted platforms (Tavus, HeyGen, D-ID, Synthesia)
+- [Alternatives](https://vocalface.com/alternatives): honest comparisons with hosted platforms (Tavus, HeyGen, D-ID, Synthesia, Anam, Simli, LemonSlice, Beyond Presence)
+- [Choosing a real-time AI avatar API](https://vocalface.com/guides/choosing-a-real-time-ai-avatar-api): vendor-neutral buyer's checklist (latency, cost per minute, concurrency, self-hosting, consent, retention, AI disclosure, integrations, face quality)
+- [MCP server](https://vocalface.com/docs/mcp): use VocalFace from Claude, Cursor and other MCP clients
+- [Changelog](https://vocalface.com/changelog) and [RSS](https://vocalface.com/changelog/rss.xml)
 - [Compare](https://vocalface.com/compare): VocalFace versus typical hosted platforms
 - [Use cases](https://vocalface.com/use-cases): support, sales, training, tutoring, healthcare intake, kiosks
 - [Pricing](https://vocalface.com/pricing)

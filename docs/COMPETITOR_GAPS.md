@@ -48,3 +48,26 @@ All tables are new (migration `0003`), all routes under `/v1`, all UI in the per
 - Pronunciation works by text respelling, so quality depends on the TTS engine's reading of the respelling; no audio was listened to.
 - Scheduled links do not send emails or reminders (no external service); the invitee fields are stored and shown only.
 - Dashboard: type-checked with `NEXT_DIST=.next-gap npx tsc --noEmit`; not rendered in a browser.
+
+## October 22 2026 update
+
+Re-researched from vendor pages and vendor-written comparisons (biased: each ranks itself first). Sources: Tavus docs changelog, models and pricing (docs.tavus.io, tavus.io/pricing); Anam changelog (anam.ai/changelog); HeyGen, LemonSlice, Synthesia and Cody comparison posts (heygen.com/blog/best-real-time-ai-avatar-platforms, lemonslice.com/i/best-avatar-api, synthesia.io/post/anam-interactive-avatar-alternatives, the Cody blog); GitHub pages of LiveTalking, OpenAvatarChat, Duix-Avatar and SoulX-FlashTalk.
+
+What moved since October 4:
+- Tavus: Phoenix-4.5 face model (Sep 2), Raven-1 perception default (Feb), Sparrow-2 turn-taking default (Oct 13), memory stores, MCP connectors and a hosted MCP server, Zoom/Meet/Teams joining, LiveKit/Pipecat/Agora, zero data retention, EU AI Act controls, recordings to your own bucket, 42 languages. Pricing: plans with included minutes, about $0.26-0.37/min overage, 30-second minimum per conversation.
+- Anam: Cara-4 (photo to real-time persona), recordings via API (Jan), HIPAA (Feb), zero data retention (Mar), meetings API (Jul), avatar videos API (Aug), pronunciation dictionaries (Oct).
+- HeyGen LiveAvatar: FULL vs LITE (bring your own agent) modes. D-ID: Agentic Videos (Apr 23). Synthesia 3.0: video agents (enterprise).
+- New real-time face APIs competing on price and latency: Simli, LemonSlice, Beyond Presence, bitHuman, Hedra.
+- Open source: LiveTalking (about 10k stars, Apache-2.0 code, Wav2Lip/MuseTalk), OpenAvatarChat (3.8k stars, Apache-2.0, full loop, ~2.2 s average response), Duix-Avatar (16k stars, offline only, community licence with commercial limits).
+- Vendor-run evaluations disagree (a Synthesia-run 609-conversation test ranks Synthesia first; others differ). One study found responsiveness predicts overall experience best.
+
+Built in response (Oct 22):
+| Gap | Seen at | Status |
+|---|---|---|
+| Conversation recordings with captions | Tavus, Anam | built (opt-in, announced, signed links, webhook, deletion) |
+| Zero data retention | Tavus, Anam | built |
+| AI disclosure / EU AI Act Art. 50 controls | Tavus | built (badge default, optional spoken line) + metadata label on generated media |
+| Closed captions in calls | Tavus | built (live captions with a CC toggle) |
+| MCP server | Tavus | built (11 tools, stdio, MCP SDK 1.x and 2.x) |
+
+Still open, in order: real-time face on an NVIDIA GPU (docs/GPU_DAY.md); LiveKit and Pipecat plugins (every competitor has them: distribution); Zoom/Meet/Teams bots; white-label widget and guest page; C2PA-signed provenance; Magic-Canvas-style on-screen components; teams SSO.

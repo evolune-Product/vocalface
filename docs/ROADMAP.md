@@ -24,3 +24,10 @@ Next, in order:
 5. Web dashboard (Next.js) + playground.
 6. Billing (Razorpay/Stripe), moderation and consent verification.
 7. Differentiators: multilingual, on-prem, per-minute pricing below Tavus.
+
+
+## Next (October 22 2026)
+1. Real-time face on a rented NVIDIA GPU: benchmark, then the live path, then the demo video (docs/GPU_DAY.md).
+2. Choose a licence for the repository (it is public with no licence, so "open-core" is not accurate yet): owner decision.
+3. LiveKit and Pipecat plugins (every real-time avatar competitor has them; they are where developers pick a face).
+4. White-label widget and guest page; Zoom/Meet/Teams bot; C2PA-signed provenance; on-screen components driven by tools.

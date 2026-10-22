@@ -33,7 +33,7 @@ export default function Page() {
         <h2>Why latency decides whether it feels real</h2>
         <p>Human conversation has gaps of a few hundred milliseconds. Past about one to two seconds, an agent feels slow. Good systems stream every stage and start speaking before the whole answer is written. On our own local stack we measured about 1.4 to 1.9 seconds from the end of speech to the first lip movement; that is one machine, not a guarantee.</p>
         <h2>Open-source versus hosted</h2>
-        <p>Hosted platforms run everything for you and lead on live face quality today. Open-core platforms like VocalFace let you self-host, swap any model and keep data in your own environment. See our <Link href="/compare">honest comparison</Link> and the <Link href="/alternatives">alternatives</Link> pages.</p>
+        <p>Hosted platforms run everything for you and lead on live face quality today. Open-core platforms like VocalFace let you self-host, swap any model and keep data in your own environment. See our <Link href="/compare">honest comparison</Link>, the <Link href="/alternatives">alternatives</Link> pages and the <Link href="/guides/choosing-a-real-time-ai-avatar-api">buyer&apos;s checklist</Link>.</p>
         <h2>Consent and safety</h2>
         <p>A digital replica of a real person should exist only with that person&apos;s consent. VocalFace requires a spoken verification phrase, checks that the voice and face match the training video, allows revocation and keeps an audit log. Read more on the <Link href="/security">security page</Link>.</p>
         <h2>Common questions</h2>

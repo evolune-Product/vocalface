@@ -14,7 +14,7 @@ export const alternatives: Alt[] = [
   },
   {
     slug: "heygen", name: "HeyGen", kind: "AI avatar video platform",
-    theyDo: "HeyGen is a hosted platform for making avatar videos from text and for interactive avatars.",
+    theyDo: "HeyGen is a hosted platform for making avatar videos from text, and for real-time interactive avatars (LiveAvatar).",
     strengths: ["Polished studio-style editor for marketing video", "Large template and avatar library", "No setup"],
     vocalWins: ["Self-hostable and API-first for developers", "Real-time two-way voice conversations with an agent, not only scripted video", "Bring your own models and keep data in your environment", "Consent-gated replicas with an audit log"],
     theyWin: ["Editor polish and content library", "Output quality for scripted marketing video", "Ease of use for non-developers"],
@@ -33,5 +33,35 @@ export const alternatives: Alt[] = [
     vocalWins: ["Real-time conversational agents, not only pre-rendered presenter video", "Self-host option for strict data-control requirements", "Developer API and embeddable widget", "Swap any model in the stack"],
     theyWin: ["Enterprise readiness and certifications", "Production quality for scripted corporate video", "Customer success and support"],
   },
+  {
+    slug: "anam", name: "Anam", kind: "real-time AI avatar API",
+    theyDo: "Anam is a hosted API for real-time AI personas generated from a single photo, used as a complete agent or as the face for your own voice pipeline.",
+    strengths: ["Real-time personas from one photo", "Integrations with agent frameworks", "Hosted, so nothing to run"],
+    vocalWins: ["Self-hostable: run the whole stack, face included, on machines you control", "Consent-gated replicas of real people, with a spoken phrase, face and voice checks and an audit log", "Swap the speech, language-model and voice stages freely", "Recording, zero data retention and AI disclosure are switches on your own deployment"],
+    theyWin: ["Lower published latency and a mature hosted service", "Compliance work it publishes, such as HIPAA support", "Ready-made integrations with LiveKit, Pipecat and other agent frameworks"],
+  },
+  {
+    slug: "simli", name: "Simli", kind: "real-time avatar video API",
+    theyDo: "Simli is a real-time avatar API that turns streamed audio into a talking face, designed as the video stage of a voice agent you already run.",
+    strengths: ["Very low published latency for the video stage", "Low per-minute prices", "Agent-framework integrations"],
+    vocalWins: ["The whole agent, not only the face: speech, language model, voice, knowledge, tools and analytics in one platform", "Self-hostable end to end", "Consent-gated replicas with an audit log", "Recording and zero data retention controls"],
+    theyWin: ["A very fast, focused video stage", "Low prices for the face layer alone", "Ready-made LiveKit and Pipecat integrations"],
+  },
+  {
+    slug: "lemonslice", name: "LemonSlice", kind: "live avatar API",
+    theyDo: "LemonSlice turns a single image, including illustrated or cartoon characters, into a live talking avatar for real-time agents.",
+    strengths: ["Many character styles from one image", "Low entry price", "Body and gesture motion"],
+    vocalWins: ["Self-hostable and API-first", "Consent-gated replicas of real people", "Swappable models across the whole stack", "Privacy controls you own: recording, zero data retention, AI disclosure"],
+    theyWin: ["Non-photoreal characters from one image", "Low entry price for a hosted service", "Body and gesture motion beyond the head"],
+  },
+  {
+    slug: "beyond-presence", name: "Beyond Presence", kind: "real-time avatar and agent API",
+    theyDo: "Beyond Presence offers speech-to-video and managed-agent APIs for real-time AI avatars.",
+    strengths: ["Very low published latency", "Managed agents", "Agent-framework integrations"],
+    vocalWins: ["Self-hostable: keep audio, video and transcripts in your own environment", "Consent-gated replicas with an audit log", "Swap any model in the stack", "Built-in knowledge with citations, tools, webhooks and analytics"],
+    theyWin: ["Very low published latency for the face", "Managed agents for teams that do not want to run anything", "Ready-made LiveKit and Pipecat integrations"],
+  },
 ];
+/** "A Tavus alternative" but "An Anam alternative". */
+export const article = (name: string) => (/^[AEIOU]/i.test(name) ? "An" : "A");
 export const findAlt = (slug: string) => alternatives.find((a) => a.slug === slug);

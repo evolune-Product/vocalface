@@ -3,14 +3,14 @@ import { notFound } from "next/navigation";
 import { Check, Info, Minus } from "lucide-react";
 import { FinalCTA, It, PageHead, Shell } from "@/components/site/Page";
 import { JsonLd, crumbs, faqLd } from "@/lib/seo";
-import { alternatives, findAlt } from "@/lib/alternatives";
+import { alternatives, article, findAlt } from "@/lib/alternatives";
 
 export const dynamicParams = false;
 export const generateStaticParams = () => alternatives.map((a) => ({ slug: a.slug }));
 export function generateMetadata({ params }: { params: { slug: string } }) {
   const a = findAlt(params.slug); if (!a) return {};
   const title = `${a.name} alternative: open-core and self-hostable - VocalFace`;
-  const description = `Looking for a ${a.name} alternative? VocalFace is an open-core, self-hostable platform for real-time conversational video AI, with an honest look at where ${a.name} is ahead.`;
+  const description = `Looking for ${article(a.name).toLowerCase()} ${a.name} alternative? VocalFace is an open-core, self-hostable platform for real-time conversational video AI, with an honest look at where ${a.name} is ahead.`;
   return { title, description, alternates: { canonical: `/alternatives/${a.slug}` }, openGraph: { title, description, type: "article" } };
 }
 
@@ -25,7 +25,7 @@ export default function Page({ params }: { params: { slug: string } }) {
   return (
     <Shell>
       <JsonLd data={[faqLd(faq), crumbs([["Home", "/"], ["Alternatives", "/alternatives"], [`${a.name} alternative`, `/alternatives/${a.slug}`]])]} />
-      <PageHead eyebrow="Alternatives" title={<>A <It>{a.name}</It> alternative you can own</>} lead={`${a.theyDo} VocalFace is the open-core option for teams that want to self-host and swap models. Here is an honest comparison.`} />
+      <PageHead eyebrow="Alternatives" title={<>{article(a.name)} <It>{a.name}</It> alternative you can own</>} lead={`${a.theyDo} VocalFace is the open-core option for teams that want to self-host and swap models. Here is an honest comparison.`} />
       <div className="mx-auto w-full max-w-5xl px-5 pb-8">
         <div className="grid gap-5 md:grid-cols-2">
           <div className="card !p-7"><h2 className="font-display text-3xl text-white">Where VocalFace fits</h2><ul className="mt-4 space-y-3 text-gray-300">{a.vocalWins.map((x) => <li key={x} className="flex gap-3"><Check size={18} className="mt-0.5 shrink-0 text-vocalface-rose" />{x}</li>)}</ul></div>

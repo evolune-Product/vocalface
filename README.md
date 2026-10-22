@@ -12,6 +12,8 @@ Open-core conversational video AI: talk face to face with an AI agent, make digi
 - **Platform:** personas, knowledge from documents and web pages with citations, objectives and guardrails, tools, webhooks, API keys, workspaces, analytics and sentiment, leads, guest and scheduled links, an embeddable widget.
 - **Dashboard and site:** Next.js app in `web/`.
 - **Safety:** consent checks, signed URLs, SSRF guard, WebSocket tickets and rate limits, signup bot protection. See `docs/SECURITY.md` for the honest gaps.
+- **Privacy controls (per persona):** opt-in conversation recordings with captions (announced, signed links only), zero data retention, AI disclosure badge (optionally spoken), machine-readable AI-generated label on generated videos and recordings.
+- **MCP server:** `sdk/mcp` lets Claude, Cursor or any MCP client create personas, open talk links, read transcripts and make videos.
 
 ## Face model choice
 SoulX-FlashHead is the one generative face model we build on. In a one-person blind test it was rated good and Wav2Lip, MuseTalk and JoyVASA all worst (JoyVASA was dropped). Numbers and caveats: `docs/BENCHMARKS.md`.
@@ -20,7 +22,7 @@ SoulX-FlashHead is the one generative face model we build on. In a one-person bl
 ## Run locally
 ```
 ./dev.sh                  # API :8000, lip-sync :8100, worker loop, web :3000
-make test                 # backend tests (447 passing on Oct 5)
+make test                 # backend tests (465 passing on Oct 22)
 make e2e                  # full browser end-to-end suite
 ```
 Needs Python 3.11, Node 20, ffmpeg and Ollama (`llama3.2:3b`). Model files are not in git; see `docs/DEPLOY.md`.

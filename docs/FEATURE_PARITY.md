@@ -4,6 +4,8 @@ Written Oct 3 2026. Competitor columns come from their public docs / marketing p
 
 Legend for VocalFace "verified": **unit** = automated tests with fakes, **live** = exercised with the real local stack (Whisper, Kokoro, Ollama qwen3:8b, a real Chromium with fake mic) on Oct 3 2026.
 
+> **Update Oct 22 2026:** recordings (with captions), zero data retention, AI disclosure, live captions in calls and an MCP server are now built; see docs/COMPETITOR_GAPS.md (October 22 update) for the refreshed competitor picture and what is still open. Rows below marked "missing" for those features are superseded.
+
 ## Real-time conversation (CVI)
 
 | Feature | Tavus | HeyGen | Synthesia | D-ID | Simli | Hedra | VocalFace | Notes |
