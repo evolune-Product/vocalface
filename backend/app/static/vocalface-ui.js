@@ -11,9 +11,11 @@ function mount(root, c, cfg = {}) {
   <div id="mx-echo" class="mx-banner warn" hidden><span id="mx-echo-t">Use headphones for best results: the agent's voice seems to be leaking into your microphone.</span><span><button id="mx-echo-ptt" class="sec">Use push-to-talk</button><button class="x" id="mx-echo-x" aria-label="Dismiss">&times;</button></span></div>
   <div id="mx-err" class="mx-banner bad" hidden></div>
   <div class="row"><button id="go">${cfg.startLabel || 'Start'}</button><button id="int" class="sec" disabled>Interrupt</button><button id="stop" class="sec" disabled>Stop</button>
-    <button id="mx-mute" class="sec" disabled aria-pressed="false">Mute</button><button id="mx-ptt" class="sec" disabled aria-pressed="false" title="Hold a button or the space bar to talk (best with speakers)">Push-to-talk</button></div>
+    <button id="mx-mute" class="sec" disabled aria-pressed="false">Mute</button><button id="mx-cc" class="sec" aria-pressed="true" title="Live captions">CC</button><button id="mx-ptt" class="sec" disabled aria-pressed="false" title="Hold a button or the space bar to talk (best with speakers)">Push-to-talk</button></div>
   <div class="row"><button id="mx-hold" class="sec" hidden>Hold to talk</button></div>
+  <div class="mx-flags"><span class="mx-flag ai" id="mx-ai" hidden title="You are talking to an AI agent, not a person">AI agent</span><span class="mx-flag rec" id="mx-recf" hidden title="This conversation is being recorded">Recording</span></div>
   <img id="face" alt="agent"><canvas id="vid"></canvas>
+  <div class="mx-cap" id="mx-cap" aria-live="polite" hidden></div>
   <div id="state" data-state="idle" role="status" aria-live="polite">idle</div>
   <div class="mx-meters"><div class="mx-meter" id="mx-mic"><span>mic</span><i><b></b></i></div><div class="mx-meter agent" id="mx-ag"><span>agent</span><i><b></b></i></div>
     <span class="mx-pill" id="mx-hp" hidden>headphones</span><span class="mx-pill" id="mx-rtt" hidden></span><span class="mx-pill" id="mx-q" hidden></span></div>
@@ -82,6 +84,22 @@ function mount(root, c, cfg = {}) {
   hold.addEventListener('pointerdown', (e) => { e.preventDefault(); try { hold.setPointerCapture(e.pointerId); } catch (x) { /* ignore */ } c.pttPress(); });
   ['pointerup', 'pointercancel', 'lostpointercapture'].forEach((n) => hold.addEventListener(n, () => c.pttRelease()));
   hold.addEventListener('contextmenu', (e) => e.preventDefault());
+
+  // ---- AI disclosure + recording flags (from the ready event), live captions ----
+  const cc = $('mx-cc'), cap = $('mx-cap');
+  let capOn = true, capTimer = null;
+  try { capOn = localStorage.getItem('mx-cc') !== '0'; } catch (e) { /* storage blocked: captions stay on */ }
+  const setCc = (on) => { capOn = on; cc.classList.toggle('on', on); cc.setAttribute('aria-pressed', on); if (!on) cap.hidden = true; try { localStorage.setItem('mx-cc', on ? '1' : '0'); } catch (e) { /* ignore */ } };
+  setCc(capOn); cc.onclick = () => setCc(!capOn);
+  const showCap = (who, text, holdMs) => {
+    if (!capOn || !text) return;
+    cap.dataset.who = who; cap.textContent = text; cap.hidden = false; clearTimeout(capTimer);
+    if (holdMs) capTimer = setTimeout(() => { cap.hidden = true; }, holdMs);
+  };
+  c.on('ready', (m) => { $('mx-ai').hidden = !(m.ai_disclosure && m.ai_disclosure !== 'off'); $('mx-recf').hidden = !m.recording; });
+  c.on('line', (l) => { if (l.role === 'user') showCap('user', l.text, 2500); else if (l.role === 'agent') showCap('agent', l.text, 0); });
+  c.on('agent_line_end', () => { clearTimeout(capTimer); capTimer = setTimeout(() => { cap.hidden = true; }, 2000); });
+  c.on('ended', () => { cap.hidden = true; $('mx-recf').hidden = true; });
 
   // ---- let the agent see me ----
   const see = $('mx-see');

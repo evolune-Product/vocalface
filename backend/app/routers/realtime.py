@@ -10,6 +10,7 @@ Also serves the test client at GET /playground.
 """
 import asyncio
 import json
+import logging
 import math
 import time
 from pathlib import Path
@@ -26,6 +27,7 @@ from ..pipeline.session import Session, build_system_prompt, get_providers, warm
 from ..rtc_transport import DEAD_AFTER_S, HEARTBEAT_S, TAG_AUDIO, TIERS, Link, b64_frames, pack_video, recode
 
 router = APIRouter()
+log = logging.getLogger("vocalface.realtime")
 STATIC = Path(__file__).resolve().parents[1] / "static"
 
 
@@ -236,6 +238,18 @@ async def _run(ws, cid, acc, conv, persona, db, link, inbox, pump_task, allow_fa
         link.bytes_audio += len(b)
         await ws.send_bytes(bytes([TAG_AUDIO]) + b if link.tagged else b)
 
+    policy, rec = None, None
+    try:  # privacy controls (app/privacy.py): opt-in recording, zero data retention, AI disclosure. Never blocks the call.
+        from .. import privacy as _privacy, recording as _recording
+
+        policy = _privacy.load(db, persona.id)
+        rec = _recording.start_for(db, conv, persona, jobs.DATA_DIR, policy)
+    except Exception:  # noqa: BLE001
+        log.exception("recording setup failed; the call continues unrecorded")
+        rec = None
+    if rec is not None:
+        tx_json, tx_bytes = rec.wrap(tx_json, tx_bytes)
+
     sess = Session(providers, rt.system_prompt(build_system_prompt(persona)) if rt else build_system_prompt(persona),
                    voice, rt.wrap_send(tx_json) if rt else tx_json, tx_bytes,
                    retriever=_make_retriever(pid, rt), lipsync=lipsync)
@@ -251,7 +265,7 @@ async def _run(ws, cid, acc, conv, persona, db, link, inbox, pump_task, allow_fa
         from ..perception import attach as _attach_perception
 
         ground_session(sess)
-        sess.perception = _attach_perception(db, persona, sess, tx_json, jobs.DATA_DIR, cid)
+        sess.perception = _attach_perception(db, persona, sess, tx_json, None if (policy and policy.zdr) else jobs.DATA_DIR, cid)
     except Exception:  # noqa: BLE001
         sess.perception = None
     base = conv.seconds_used or 0
@@ -282,10 +296,15 @@ async def _run(ws, cid, acc, conv, persona, db, link, inbox, pump_task, allow_fa
     except Exception:  # warm-up is an optimisation: never block or fail the call because of it
         pass
     await ws.send_json({"type": "ready", "input_sample_rate": 16000, "output_sample_rate": 24000, "face_url": face_url,
-                         "live_face": lipsync is not None, "resumed": resumed, "tier": link.tier if link.hello else None})
+                         "live_face": lipsync is not None, "resumed": resumed, "tier": link.tier if link.hello else None,
+                         **(_privacy.client_flags(policy, rec is not None) if policy is not None else {})})
     idle_task = None
     if lipsync is not None:  # idle loop keeps the face alive between answers; fetched in the background (cold: ~8 s)
         idle_task = asyncio.create_task(send_idle_loop(ws, sess, lipsync, tx_json, link))
+    if rt and policy is not None and not (resumed or link.resume):
+        _lines = _privacy.opening_lines(policy)
+        if _lines:
+            rt.greeting = f"{_lines} {rt.greeting}".strip()
     if rt:
         from ..billing import session_allowance as _allow
 
@@ -313,6 +332,8 @@ async def _run(ws, cid, acc, conv, persona, db, link, inbox, pump_task, allow_fa
                     break
                 continue
             if msg.get("bytes"):
+                if rec is not None:
+                    rec.on_mic(msg["bytes"])
                 await sess.feed(msg["bytes"])
             elif msg.get("text"):
                 try:
@@ -360,6 +381,11 @@ async def _run(ws, cid, acc, conv, persona, db, link, inbox, pump_task, allow_fa
         # (abrupt disconnect) the awaits below may never finish, and the runtime's time-limit watchdog used to leak per call.
         for t in list(getattr(rt, "_tasks", ())) + list(getattr(sess, "_jobs", ())):
             t.cancel()
+        if rec is not None:  # compose on a worker thread; the spool files are closed first, so late taps are ignored
+            try:
+                _recording.finish_in_background(rec, jobs.DATA_DIR)
+            except Exception:  # noqa: BLE001
+                log.exception("recording finish failed")
         try:
             await sess.close()
             if rt:

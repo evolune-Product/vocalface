@@ -70,3 +70,14 @@ label.mx-check input{width:auto;padding:0;min-height:0;accent-color:#ff4d8d}
   .mx-keys{display:none}
   #mx-hold{min-height:64px;flex:1 1 100%;font-size:16px}
 }
+
+/* AI disclosure + recording flags, live captions */
+.mx-flags{display:flex;gap:.5rem;justify-content:center;margin:.9rem 0 0;min-height:0}
+.mx-flag{padding:.15rem .6rem;border-radius:999px;font:600 11px ui-monospace,SFMono-Regular,monospace;letter-spacing:.08em;text-transform:uppercase}
+.mx-flag[hidden]{display:none}
+.mx-flag.ai{background:#7dd3fc1f;color:#bfe9ff;border:1px solid #7dd3fc55}
+.mx-flag.rec{background:#ff3b3b1f;color:#ffb3b3;border:1px solid #ff3b3b66}
+.mx-flag.rec::before{content:"";display:inline-block;width:7px;height:7px;border-radius:50%;background:#ff3b3b;margin-right:6px;vertical-align:0;animation:pulse 1.2s infinite}
+.mx-cap{max-width:min(100%,640px);margin:.4rem auto 0;padding:.45rem .8rem;border-radius:10px;background:#000c;color:#fff;font:15px/1.4 system-ui,sans-serif;text-align:center}
+.mx-cap[hidden]{display:none}
+.mx-cap[data-who=user]{color:#cfe8ff;font-style:italic}

@@ -24,6 +24,10 @@ def sign_file(body: SignIn, acc: Account = Depends(current_account), s: Session 
     parts = path.split("/")  # '', v1, files, kind, ...
     if parts[3] == "creative":  # /v1/files/creative/{replicas|videos}/<id>/<file> (routers/photo_replica.py)
         obj = s.get(Video if parts[4] == "videos" else Replica, parts[5])
+    elif parts[3] == "recordings":  # /v1/files/recordings/<conversation_id>/<file> (routers/privacy_api.py)
+        from ..models_privacy import ConversationRecording
+
+        obj = s.get(ConversationRecording, parts[4])
     elif parts[3] == "videos":
         obj = s.get(Video, parts[4].removesuffix(".mp4"))
     else:

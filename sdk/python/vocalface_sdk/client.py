@@ -262,3 +262,13 @@ class VocalFace:
         return self._req("PUT", f"/personas/{persona_id}/integrations", json=cfg)
     def test_integration(self, persona_id: str, which: str = "booking") -> dict:
         return self._req("POST", f"/personas/{persona_id}/integrations/test", json={"which": which})
+
+    # ---- privacy: recording, zero data retention, AI disclosure ----
+    def get_privacy(self, persona_id: str) -> dict: return self._req("GET", f"/personas/{persona_id}/privacy")
+    def set_privacy(self, persona_id: str, **policy) -> dict:
+        """policy: record_conversations, announce_recording, zero_data_retention (bools), ai_disclosure ('off'|'badge'|'spoken')"""
+        return self._req("PUT", f"/personas/{persona_id}/privacy", json=policy)
+    def get_recording(self, conversation_id: str) -> dict:
+        """{status, kind, duration_s, parts, recording_url?, captions_url?} (signed, relative to the API base)"""
+        return self._req("GET", f"/conversations/{conversation_id}/recording")
+    def delete_recording(self, conversation_id: str) -> dict: return self._req("DELETE", f"/conversations/{conversation_id}/recording")

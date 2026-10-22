@@ -196,6 +196,21 @@ export class VocalFace {
   getIntegrations(persona_id: string) { return this.req<any>("GET", `/personas/${persona_id}/integrations`); }
   setIntegrations(persona_id: string, c: { booking_webhook_url?: string; booking_secret?: string; notify_webhook_url?: string; notify_secret?: string }) { return this.req<any>("PUT", `/personas/${persona_id}/integrations`, c); }
   testIntegration(persona_id: string, which: "booking" | "notify" = "booking") { return this.req<{ ok: boolean; response: string }>("POST", `/personas/${persona_id}/integrations/test`, { which }); }
+  // ---- privacy: recording, zero data retention, AI disclosure ----
+  getPrivacy(persona_id: string) { return this.req<PersonaPrivacy>("GET", `/personas/${persona_id}/privacy`); }
+  setPrivacy(persona_id: string, p: Partial<Pick<PersonaPrivacy, "record_conversations" | "announce_recording" | "zero_data_retention" | "ai_disclosure">>) { return this.req<PersonaPrivacy>("PUT", `/personas/${persona_id}/privacy`, p); }
+  getRecording(conversation_id: string) { return this.req<ConversationRecording>("GET", `/conversations/${conversation_id}/recording`); }
+  deleteRecording(conversation_id: string) { return this.req<{ deleted: boolean }>("DELETE", `/conversations/${conversation_id}/recording`); }
+}
+
+export interface PersonaPrivacy {
+  persona_id: string; record_conversations: boolean; announce_recording: boolean; zero_data_retention: boolean;
+  ai_disclosure: "off" | "badge" | "spoken"; recording_active: boolean; recording_available: boolean; notes: string[];
+}
+
+export interface ConversationRecording {
+  conversation_id: string; status: "recording" | "processing" | "ready" | "error"; kind: "video" | "audio"; parts: number;
+  duration_s: number; size_bytes: number; error: string | null; recording_url?: string; captions_url?: string;
 }
 
 export interface ReplicaVoice {

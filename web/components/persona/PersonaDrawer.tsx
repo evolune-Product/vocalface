@@ -3,6 +3,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { Eye, BrainCircuit, FileText, Link2, Loader2, Plus, Save, Target, Trash2, Wrench, ShieldAlert, Cpu, Send, Brain, ExternalLink, Play } from "lucide-react";
 import { api, errText, Perception, Persona, Replica, PersonaConfig, Objective, Guardrail, Tool, ShareLink, Voice, Lang, fmtDate, fmtDur } from "@/lib/api";
 import EmbedTab from "@/components/persona/EmbedTab";
+import PrivacyTab from "@/components/persona/PrivacyTab";
 import { KnowledgeUrl, VoiceExtras, ScheduleCall } from "@/components/persona/GapPanels";
 import { Callout } from "@/components/kit";
 import { Modal, Tabs, Section, Toggle, Field, Badge, CopyButton, ConfirmDialog, Spinner, toast } from "@/components/ui";
@@ -10,7 +11,7 @@ import { Modal, Tabs, Section, Toggle, Field, Badge, CopyButton, ConfirmDialog, 
 type PForm = { name: string; system_prompt: string; knowledge: string; replica_id: string; tts_voice: string; llm: string };
 const EMPTY: PForm = { name: "", system_prompt: "", knowledge: "", replica_id: "", tts_voice: "default", llm: "ollama/llama3.2:3b" };
 const EMPTY_CFG: Omit<PersonaConfig, "persona_id"> = { language: "en", greeting: "", objectives: [], guardrails: [], guardrail_fallback: "Sorry, I can't help with that.", memory_enabled: true, custom_llm: { base_url: "", model: "", has_api_key: false }, stt_model: "" };
-type Tab = "general" | "voice" | "embed" | "perception" | "behavior" | "model" | "tools" | "share" | "memory";
+type Tab = "general" | "voice" | "embed" | "perception" | "privacy" | "behavior" | "model" | "tools" | "share" | "memory";
 type Doc = { id: string; title: string; source: string; n_chunks: number; created_at: string };
 const csv = (s: string) => s.split(",").map((x) => x.trim()).filter(Boolean);
 
@@ -330,7 +331,7 @@ export default function PersonaDrawer({ open, onClose, persona, reps, onSaved }:
 
   const tabs: { id: Tab; label: string; badge?: number }[] = [
     { id: "general", label: "General" }, { id: "voice", label: "Voice & language" }, { id: "behavior", label: "Behavior", badge: cfg.objectives.length + cfg.guardrails.length },
-    { id: "perception", label: "Perception" }, { id: "model", label: "Model" }, { id: "tools", label: "Tools" }, { id: "embed", label: "Embed & leads" }, { id: "share", label: "Share" }, { id: "memory", label: "Memories" },
+    { id: "perception", label: "Perception" }, { id: "privacy", label: "Privacy" }, { id: "model", label: "Model" }, { id: "tools", label: "Tools" }, { id: "embed", label: "Embed & leads" }, { id: "share", label: "Share" }, { id: "memory", label: "Memories" },
   ];
   const locked = !pid;
   const updObj = (i: number, patch: Partial<Objective>) => setCfg({ ...cfg, objectives: cfg.objectives.map((o, j) => (j === i ? { ...o, ...patch } : o)) });
@@ -435,6 +436,7 @@ export default function PersonaDrawer({ open, onClose, persona, reps, onSaved }:
       </>)}
 
       {tab === "perception" && pid && <PerceptionTab pid={pid} />}
+      {tab === "privacy" && pid && <PrivacyTab pid={pid} />}
       {tab === "embed" && pid && <EmbedTab pid={pid} />}
       {tab === "tools" && pid && <Tools pid={pid} />}
       {tab === "share" && pid && <Share pid={pid} />}

@@ -55,6 +55,17 @@ def _rm_perception(cids: list[str]) -> int:
     return n
 
 
+def _rm_recordings(cids: list[str]) -> int:
+    """Conversation recordings (app/recording.py): data/recordings/<conversation_id>/ and the stored copies."""
+    from . import recording
+
+    n = 0
+    for cid in cids:
+        n += _rm(recording.rec_dir(settings.data_dir(), cid))
+        recording.delete(settings.data_dir(), cid)
+    return n
+
+
 def delete_replica(s: Session, acc: Account, rid: str) -> int:
     """Remove replica, its videos, consent evidence, job rows, files. Personas keep existing but lose the link."""
     vids = [r[0] for r in s.execute(select(Video.id).where(Video.replica_id == rid, Video.account_id == acc.id))]
@@ -67,6 +78,10 @@ def delete_replica(s: Session, acc: Account, rid: str) -> int:
         ct = SQLModel.metadata.tables["conversation"]
         cids = [r[0] for r in s.execute(select(ct.c.id).where(ct.c.persona_id.in_(pids), ct.c.account_id == acc.id))]
     files += _rm_perception(cids)
+    files += _rm_recordings(cids)  # the recordings show this replica's face
+    if cids and "conversationrecording" in SQLModel.metadata.tables:  # conversations stay; their recordings go
+        t = SQLModel.metadata.tables["conversationrecording"]
+        s.exec(delete(t).where(t.c.conversation_id.in_(cids)))
     files += _rm(jobs.replica_dir(rid))
     storage.remove(jobs.replica_dir(rid)); storage.remove(settings.data_dir() / "consent" / rid)
     files += _rm(settings.data_dir() / "consent" / rid)
@@ -100,6 +115,7 @@ def delete_account(s: Session, acc: Account) -> int:
         t = SQLModel.metadata.tables["knowledgedoc"]
         docs = [r[0] for r in s.execute(select(t.c.id).where(t.c.account_id == aid))] if "account_id" in t.c else []
     files += _rm_perception(cids)
+    files += _rm_recordings(cids)
     kids, wids, batches, assets = [], [], [], []
     T = SQLModel.metadata.tables
     if "apikey" in T:

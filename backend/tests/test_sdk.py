@@ -37,3 +37,16 @@ def test_sdk_roundtrip(client):
     m.revoke_consent(r["id"])
     with pytest.raises(VocalFaceError):
         VocalFace(api_key="bad", http_client=client).usage()
+
+
+def test_sdk_privacy_and_recording(client):
+    m = VocalFace(http_client=client)
+    m.signup("sdk-privacy@x.com")
+    p = m.create_persona("Bot", "be nice")
+    assert m.get_privacy(p["id"])["ai_disclosure"] == "badge"
+    out = m.set_privacy(p["id"], record_conversations=True, ai_disclosure="spoken")
+    assert out["record_conversations"] is True and out["ai_disclosure"] == "spoken"
+    c = m.create_conversation(p["id"])
+    with pytest.raises(VocalFaceError) as e:  # nothing was recorded for a conversation that never ran
+        m.get_recording(c["id"])
+    assert e.value.status == 404

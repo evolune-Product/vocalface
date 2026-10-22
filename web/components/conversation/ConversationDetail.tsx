@@ -1,7 +1,7 @@
 "use client";
 import { useEffect, useState } from "react";
-import { BookOpen, TrendingUp, CheckCircle2, Circle, Clock, Gauge, Wrench, MessageSquareQuote, Play } from "lucide-react";
-import { api, Conversation, Turn, PersonaConfig, fmtDate, fmtDur } from "@/lib/api";
+import { BookOpen, TrendingUp, CheckCircle2, Circle, Clock, Gauge, Wrench, MessageSquareQuote, Play, Video } from "lucide-react";
+import { api, API_URL, Conversation, Turn, PersonaConfig, fmtDate, fmtDur } from "@/lib/api";
 import { Modal, Badge, CopyButton, Skeleton, Section } from "@/components/ui";
 
 type Transcript = { summary: string; status: string; turns: Turn[] };
@@ -9,6 +9,8 @@ type Metrics = { user_turns: number; agent_turns: number; avg_first_audio_ms: nu
 type ObjRow = { name: string; completed: boolean; evidence: string; variables: Record<string, unknown> };
 type Insight = { sentiment: number; label: string; trend: string; topics: string[]; user_talk_ratio: number; questions: number; user_words: number; agent_words: number };
 type Cite = { seq: number; sources: { title: string; url: string | null; score: number; snippet: string }[] };
+type Rec = { status: string; kind: "video" | "audio"; duration_s: number; parts: number; error: string | null; recording_url?: string; captions_url?: string };
+const abs = (u?: string) => (u && u.startsWith("/") ? API_URL + u : u || "");
 type ToolCall = { tool: string; arguments: Record<string, unknown>; result: string; ok: boolean; duration_ms: number; created_at: string };
 
 const clock = (ms: number) => { const s = Math.max(0, Math.round(ms / 1000)); return `${Math.floor(s / 60)}:${String(s % 60).padStart(2, "0")}`; };
@@ -22,8 +24,9 @@ export default function ConversationDetail({ conv, personaName, onClose, onPlay 
   const [tr, setTr] = useState<Transcript | null>(null); const [m, setM] = useState<Metrics | null | undefined>(undefined);
   const [objs, setObjs] = useState<ObjRow[] | null>(null); const [cfgObjs, setCfgObjs] = useState<string[]>([]); const [calls, setCalls] = useState<ToolCall[]>([]);
   const [ins, setIns] = useState<Insight | null>(null); const [cites, setCites] = useState<Record<number, Cite["sources"]>>({});
+  const [rec, setRec] = useState<Rec | null>(null); const [vtt, setVtt] = useState("");
   useEffect(() => {
-    if (!conv) return; setTr(null); setM(undefined); setObjs(null); setCalls([]); setCfgObjs([]); setIns(null); setCites({});
+    if (!conv) return; setTr(null); setM(undefined); setObjs(null); setCalls([]); setCfgObjs([]); setIns(null); setCites({}); setRec(null);
     const id = conv.id; let live = true;
     api<Transcript>(`/v1/conversations/${id}/transcript`).then((t) => live && setTr(t)).catch(() => live && setTr({ summary: "", status: conv.status, turns: [] }));
     api<Metrics>(`/v1/conversations/${id}/metrics`).then((x) => live && setM(x)).catch(() => live && setM(null));
@@ -31,9 +34,16 @@ export default function ConversationDetail({ conv, personaName, onClose, onPlay 
     api<ToolCall[]>(`/v1/conversations/${id}/tool-calls`).then((x) => live && setCalls(x)).catch(() => {});
     api<Insight>(`/v1/conversations/${id}/insights`).then((x) => live && setIns(x)).catch(() => {});
     api<Cite[]>(`/v1/conversations/${id}/citations`).then((x) => live && setCites(Object.fromEntries(x.map((c) => [c.seq, c.sources])))).catch(() => {});
+    api<Rec>(`/v1/conversations/${id}/recording`).then((x) => live && setRec(x)).catch(() => {});  // 404: not recorded
     api<PersonaConfig>(`/v1/personas/${conv.persona_id}/config`).then((c) => live && setCfgObjs(c.objectives.map((o) => o.name))).catch(() => {});
     return () => { live = false; };
   }, [conv]);
+  useEffect(() => {  // captions as a same-origin blob, so the <track> works without CORS on the media file
+    if (!rec?.captions_url) { setVtt(""); return; }
+    let url = ""; let live = true;
+    fetch(abs(rec.captions_url)).then((r) => (r.ok ? r.text() : "")).then((t) => { if (live && t) { url = URL.createObjectURL(new Blob([t], { type: "text/vtt" })); setVtt(url); } }).catch(() => {});
+    return () => { live = false; if (url) URL.revokeObjectURL(url); };
+  }, [rec?.captions_url]);
   const rows = (() => { const by = new Map((objs ?? []).map((o) => [o.name, o])); const names = [...new Set([...cfgObjs, ...by.keys()])];
     return names.map((n) => by.get(n) ?? { name: n, completed: false, evidence: "", variables: {} }); })();
   const text = tr?.turns.map((t) => `[${clock(t.t_ms)}] ${t.role === "user" ? "User" : "Agent"}: ${t.text}`).join("\n") ?? "";
@@ -52,6 +62,16 @@ export default function ConversationDetail({ conv, personaName, onClose, onPlay 
           {tr === null ? <Skeleton className="h-14" /> : tr.summary ? <p className="rounded-xl border border-white/10 bg-white/[0.03] p-3.5 text-sm leading-relaxed text-gray-200" data-testid="summary">{tr.summary}</p>
             : <p className="rounded-xl border border-dashed border-white/15 p-3.5 text-sm text-gray-500">{conv.status === "ended" ? "No summary: the conversation had no spoken turns." : "A summary is written when the conversation ends."}</p>}
         </Section>
+
+        {rec && (
+          <Section title="Recording" icon={<Video size={16} className="text-vocalface-rose" />} hint="What the participant heard and saw. Delete it with DELETE /v1/conversations/{id}/recording.">
+            {rec.status === "ready" ? (rec.kind === "video"
+              ? <video controls preload="metadata" className="w-full rounded-xl bg-black" src={abs(rec.recording_url)} data-testid="recording-player">{vtt && <track kind="captions" src={vtt} srcLang="en" label="Captions" default />}</video>
+              : <audio controls preload="metadata" className="w-full" src={abs(rec.recording_url)} data-testid="recording-player" />)
+              : <p className="text-sm text-gray-400">{rec.status === "error" ? `No recording: ${rec.error ?? "it failed"}` : "The recording is being prepared."}</p>}
+            {rec.status === "ready" && <div className="mt-2 flex flex-wrap gap-4 text-xs text-gray-400"><a className="underline" href={abs(rec.recording_url)} download>Download</a><a className="underline" href={abs(rec.captions_url)} download>Captions (.vtt)</a><span>{fmtDur(rec.duration_s)}{rec.parts > 1 ? ` in ${rec.parts} parts` : ""}</span></div>}
+          </Section>
+        )}
 
         <Section title="Metrics" icon={<Gauge size={16} className="text-vocalface-cyan" />}>
           {m === undefined ? <Skeleton className="h-16" /> : m === null ? <p className="rounded-xl border border-dashed border-white/15 p-3.5 text-sm text-gray-500">Metrics are stored when the conversation ends.</p> : (

@@ -30,7 +30,7 @@ from .models_features import WebhookDelivery, WebhookEndpoint
 EVENTS = [
     "conversation.started", "conversation.ended", "transcript.ready", "objective.completed",
     "tool.called", "guardrail.triggered", "replica.ready", "replica.error", "video.ready", "video.error",
-    "video_batch.completed", "lead.captured", "lead.updated",
+    "video_batch.completed", "lead.captured", "lead.updated", "conversation.recording_ready",
 ]
 BACKOFF_S = [10, 60, 300, 1800, 7200]  # delay before attempt 2..6
 MAX_ATTEMPTS = len(BACKOFF_S) + 1

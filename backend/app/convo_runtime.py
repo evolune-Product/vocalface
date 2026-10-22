@@ -99,6 +99,8 @@ class ConversationRuntime:
         self.tuning = None
         self._pending_hits: list[dict] = []
         self.stats = {"tool_calls": 0, "guardrail_hits": 0, "interruptions": 0}
+        self.retain = True  # False under the persona's zero data retention: content stays in RAM for this call only
+        self._ram_turns: list[tuple[str, str]] = []
 
     # ---- construction ----
     @classmethod
@@ -114,8 +116,15 @@ class ConversationRuntime:
 
         have = {t.name for t in tools}
         tools += [t for t in builtin_tools.tools_for(s, persona.id, conv.account_id) if t.name not in have]
-        mem = memories_for(s, persona.id, meta.participant_id) if (cfg is None or cfg.memory_enabled) else []
+        try:
+            from . import privacy
+
+            retain = privacy.load(s, persona.id).retain
+        except Exception:  # noqa: BLE001
+            retain = True
+        mem = memories_for(s, persona.id, meta.participant_id) if retain and (cfg is None or cfg.memory_enabled) else []
         rt = cls(conv, persona, cfg, meta, tools, mem)
+        rt.retain = retain
         try:  # gap features: pronunciation glossary + interruption tuning (a failure here must never block a call)
             from . import pronunciation
             from .models_gap import PronunciationEntry, VoiceTuning
@@ -203,12 +212,13 @@ class ConversationRuntime:
     def _on_tool(self, info: dict) -> None:
         self.stats["tool_calls"] += 1
         try:
+            args, result = (json.dumps(info["arguments"]), info["result"][:2000]) if self.retain else ("{}", "")
             with DB(db.engine) as s:
-                s.add(ToolCallLog(conversation_id=self.cid, tool_name=info["name"], arguments=json.dumps(info["arguments"]),
-                                  result=info["result"][:2000], ok=info["ok"], duration_ms=info["duration_ms"]))
+                s.add(ToolCallLog(conversation_id=self.cid, tool_name=info["name"], arguments=args,
+                                  result=result, ok=info["ok"], duration_ms=info["duration_ms"]))
                 s.commit()
             webhooks.emit(self.account_id, "tool.called", {"conversation_id": self.cid, "tool": info["name"],
-                                                           "arguments": info["arguments"], "ok": info["ok"]})
+                                                           "arguments": info["arguments"] if self.retain else {}, "ok": info["ok"]})
         except Exception:  # noqa: BLE001
             pass
 
@@ -259,6 +269,10 @@ class ConversationRuntime:
     def _add_turn(self, role: str, text: str, latency: Optional[int] = None, interrupted: bool = False) -> None:
         if not text.strip():
             return
+        if not self.retain:  # zero data retention: the objective judge reads this RAM copy; nothing is written
+            self._ram_turns.append((role, text.strip()))
+            self._seq += 1
+            return
         with DB(db.engine) as s:
             s.add(TranscriptTurn(conversation_id=self.cid, seq=self._seq, role=role, text=text.strip(),
                                  t_ms=int((time.monotonic() - self._t0) * 1000), first_audio_ms=latency, interrupted=interrupted))
@@ -266,7 +280,8 @@ class ConversationRuntime:
         self._seq += 1
 
     def _save_citations(self, seq: int) -> None:
-        if not self._pending_hits:
+        if not self._pending_hits or not self.retain:
+            self._pending_hits = []
             return
         from .models_gap import KnowledgeSource, TurnCitation
 
@@ -334,6 +349,8 @@ class ConversationRuntime:
 
     # ---- objectives ----
     def _transcript_text(self) -> str:
+        if not self.retain:
+            return "\n".join(f"{'User' if r == 'user' else 'Agent'}: {t}" for r, t in self._ram_turns)
         with DB(db.engine) as s:
             rows = s.exec(select(TranscriptTurn).where(TranscriptTurn.conversation_id == self.cid)
                           .order_by(TranscriptTurn.seq)).all()
@@ -386,7 +403,9 @@ async def judge_objectives(rt: ConversationRuntime, open_objs: list[dict], notif
             if row and row.completed:
                 continue
             row = row or ObjectiveProgress(conversation_id=rt.cid, name=o["name"])
-            evidence = str(r.get("evidence", ""))[:500]
+            evidence = str(r.get("evidence", ""))[:500] if rt.retain else ""
+            if not rt.retain:
+                variables = {}
             row.completed, row.evidence = True, evidence
             row.variables, row.completed_at = json.dumps(variables), datetime.now(timezone.utc)
             s.add(row); s.commit()
@@ -395,7 +414,8 @@ async def judge_objectives(rt: ConversationRuntime, open_objs: list[dict], notif
         try:  # safety net for lead capture when the model forgot to call capture_lead (leads.py)
             from . import leads
 
-            await asyncio.to_thread(leads.on_objective_completed, rt.account_id, rt.cid, rt.persona_id, variables)
+            if rt.retain:
+                await asyncio.to_thread(leads.on_objective_completed, rt.account_id, rt.cid, rt.persona_id, variables)
         except Exception:  # noqa: BLE001
             pass
         newly.append(info)
@@ -444,6 +464,17 @@ async def finalize_conversation(cid: str, reason: str = "ended") -> bool:
         rt = ConversationRuntime.build(s, conv, persona) if persona else None
         account_id, seconds = conv.account_id, conv.seconds_used
         participant = meta.participant_id
+        retain = rt.retain if rt is not None else True
+        if not retain:  # zero data retention: nothing about the content outlives the call (rows written before it was on too)
+            from sqlalchemy import delete as _delete
+
+            from .models_gap import TurnCitation
+
+            with DB(db.engine) as s2:  # own session: committing `s` here would expire `conv`, which is read after this block
+                s2.exec(_delete(TranscriptTurn).where(TranscriptTurn.conversation_id == cid))
+                s2.exec(_delete(TurnCitation).where(TurnCitation.conversation_id == cid))
+                s2.commit()
+            turns = []
 
     user_turns = [t for t in turns if t.role == "user"]
     agent_turns = [t for t in turns if t.role == "assistant"]
@@ -500,7 +531,8 @@ async def finalize_conversation(cid: str, reason: str = "ended") -> bool:
         webhooks.emit(account_id, "conversation.ended", {
             "conversation_id": cid, "persona_id": conv.persona_id, "seconds_used": seconds, "reason": reason,
             "summary": summary, "objectives": objectives}, session=s)
-        webhooks.emit(account_id, "transcript.ready", {"conversation_id": cid, "turns": len(turns)}, session=s)
+        if retain:
+            webhooks.emit(account_id, "transcript.ready", {"conversation_id": cid, "turns": len(turns)}, session=s)
     return True
 
 
