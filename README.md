@@ -38,3 +38,6 @@ Wav2Lip (live lip-sync) and LivePortrait/InsightFace (fallback photo avatars) us
 Hosting: `netlify.toml` deploys the marketing pages only; the dashboard needs a hosted backend (not set up). GPU test plan: `docs/GPU_RUNBOOK.md`.
 
 More: `docs/FEATURE_PARITY.md`, `docs/COMPETITOR_GAPS.md`, `docs/UNIT_ECONOMICS.md`, `docs/ROADMAP.md`.
+
+## Contact
+Evolune EdgeTech LLP: evoluneai@gmail.com (sales, support, partnerships, investors, privacy and security reports).

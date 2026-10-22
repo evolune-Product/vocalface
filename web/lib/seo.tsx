@@ -1,4 +1,4 @@
-import { SITE } from "./site";
+import { CONTACT_EMAIL, SITE } from "./site";
 export { SITE };
 export const ORG = "Evolune EdgeTech LLP";
 
@@ -16,6 +16,8 @@ export const organization = {
   logo: `${SITE}/brand/emblem-og.png`,
   description: "VocalFace is an open-core platform for real-time conversational video AI agents, consent-based digital replicas and talking-head video generation.",
   parentOrganization: { "@type": "Organization", name: ORG },
+  email: CONTACT_EMAIL,
+  contactPoint: [{ "@type": "ContactPoint", contactType: "customer support", email: CONTACT_EMAIL, availableLanguage: ["English"] }],
   sameAs: ["https://github.com/evolune-Product/vocalface"],
 };
 

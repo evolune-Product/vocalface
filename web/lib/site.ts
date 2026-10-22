@@ -7,3 +7,6 @@ const PRODUCTION_ORIGIN = "https://vocalface.com";
 export const SITE = (process.env.NEXT_PUBLIC_SITE_URL || (process.env.NODE_ENV === "production" ? PRODUCTION_ORIGIN : "http://localhost:3000"))
   .trim()
   .replace(/\/+$/, "");
+
+/** Public contact address for everything (investors, support, privacy, security). Override with NEXT_PUBLIC_CONTACT_EMAIL. */
+export const CONTACT_EMAIL = (process.env.NEXT_PUBLIC_CONTACT_EMAIL || "evoluneai@gmail.com").trim();

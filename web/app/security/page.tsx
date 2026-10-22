@@ -1,6 +1,7 @@
 import { Check, FileSearch, Server, ShieldCheck, Trash2, UserCheck, Info } from "lucide-react";
 import { FinalCTA, It, PageHead, Shell } from "@/components/site/Page";
 import Reveal from "@/components/site/Reveal";
+import { CONTACT_EMAIL } from "@/lib/site";
 
 export const metadata = { title: "Security and consent - VocalFace", description: "Consent-first replicas, moderation, audit log, data deletion and self-hosting, with the current limits stated plainly.", alternates: { canonical: "/security" } };
 
@@ -8,7 +9,7 @@ const items = [
   [UserCheck, "Consent-first replicas", "A replica cannot be marked ready without a consent record. The person on camera records their voice reading a one-time phrase with a random code. The server transcribes it, checks the code words, and compares the speaker's voice with the voice in the training video. Challenges expire after 15 minutes and work once, and consent can be revoked at any time."],
   [ShieldCheck, "Moderation", "Scripts and conversations are checked against a built-in blocklist. Add your own terms, or point VocalFace at a local Ollama model for an extra classifier. If the classifier is down it falls back to the blocklist."],
   [FileSearch, "Audit log", "Sensitive account actions are written to an audit log you can read through GET /v1/audit and the dashboard."],
-  [Trash2, "Deletion", "Knowledge documents and consent records can be deleted through the API. When you self-host, you own the database and can delete anything. For account-wide deletion on the hosted service, contact us."],
+  [Trash2, "Deletion", "Knowledge documents and consent records can be deleted through the API. When you self-host, you own the database and can delete anything. Delete a whole hosted account with POST /v1/account/delete-my-data, or email us."],
   [Server, "Self-hosting", "Run the API, models and storage on your own hardware so audio, transcripts and likenesses never leave your network. The voice stack needs no third-party model vendor."],
 ] as const;
 
@@ -24,7 +25,7 @@ export default function Page() {
         <ul className="mt-4 space-y-3 text-gray-200">
           {["Consent checks the spoken phrase and that the voice matches the training video, but it is not liveness detection: a live voice clone could pass it, and the face is not tied to the voice.", "Rate limiting is in-process, so it applies per API worker.", "We have no SOC 2, ISO 27001 or HIPAA certification. Do not assume them.", "Billing webhooks are tested with signatures, not against live provider endpoints."].map((x) => <li key={x} className="flex gap-3"><Check size={18} className="mt-0.5 shrink-0 text-vocalface-amber" />{x}</li>)}
         </ul>
-        <p className="mt-5 text-sm text-gray-300">Found a vulnerability? Please report it responsibly to the maintainers listed in the repository.</p>
+        <p className="mt-5 text-sm text-gray-300">Found a vulnerability? Please report it privately to <a className="underline" href={`mailto:${CONTACT_EMAIL}?subject=Security`}>{CONTACT_EMAIL}</a> before disclosing it.</p>
       </div></div>
       <FinalCTA />
     </Shell>

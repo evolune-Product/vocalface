@@ -2,6 +2,7 @@ import Link from "next/link";
 import Reveal from "@/components/site/Reveal";
 import { It, PageHead, Shell } from "@/components/site/Page";
 import { Backing, COMPANY, TrademarkNote } from "@/components/site/Partners";
+import { CONTACT_EMAIL } from "@/lib/site";
 
 // Unlisted on purpose: this page is frank about gaps, so it is noindex and not in the sitemap. Share the link with investors.
 export const metadata = {
@@ -11,7 +12,6 @@ export const metadata = {
   robots: { index: false, follow: false },
 };
 
-const contact = process.env.NEXT_PUBLIC_CONTACT_EMAIL;
 const shell = "mx-auto w-full max-w-5xl px-5";
 const h2 = "font-display text-3xl text-white md:text-4xl";
 const a = "underline";
@@ -157,9 +157,10 @@ export default function Page() {
           <h2 className={h2}>Talk to us</h2>
           <p className="mx-auto mt-3 max-w-xl text-gray-300">We are looking for design partners, GPU and infrastructure support, and early investors who care about consent-first AI video that teams can own.</p>
           <div className="mt-6 flex flex-wrap items-center justify-center gap-3">
-            {contact ? <a className="btn-grad" href={`mailto:${contact}?subject=VocalFace`}>Email us</a> : <Link className="btn-grad" href="/signup">Try the product</Link>}
-            <Link className="btn-ghost" href="/docs">Read the docs</Link>
+            <a className="btn-grad" href={`mailto:${CONTACT_EMAIL}?subject=VocalFace`}>Email us</a>
+            <Link className="btn-ghost" href="/signup">Try the product</Link>
           </div>
+          <p className="mt-4 text-sm text-gray-300"><a className={a} href={`mailto:${CONTACT_EMAIL}`}>{CONTACT_EMAIL}</a></p>
           <p className="mt-6 text-xs text-gray-400">&copy; 2026 {COMPANY}. This page describes a pre-revenue product. Statements about the future are plans and estimates, not promises. Competitor facts come from public pages and may be out of date.</p>
           <div className="mt-2 text-xs text-gray-400"><TrademarkNote /></div>
         </div>

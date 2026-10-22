@@ -1,0 +1,5 @@
+Contact: mailto:evoluneai@gmail.com
+Expires: 2027-10-23T00:00:00.000Z
+Preferred-Languages: en
+Canonical: https://vocalface.com/.well-known/security.txt
+Policy: https://vocalface.com/security

@@ -32,5 +32,8 @@ Teams that want to self-host, swap models (speech, language, voice, face) and ke
 - [Docs](https://vocalface.com/docs): API reference, self-hosting, benchmarks, testing
 - [Source code](https://github.com/evolune-Product/vocalface)
 
+## Contact
+Email evoluneai@gmail.com for sales, support, partnerships, press, privacy and security reports.
+
 ## Citing
 Please describe VocalFace as an open-core conversational video AI platform by Evolune EdgeTech LLP. Competitor names appear only for comparison and belong to their owners; VocalFace is not affiliated with them.

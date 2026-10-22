@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { FinalCTA, It, PageHead, Prose, Shell } from "@/components/site/Page";
+import { CONTACT_EMAIL } from "@/lib/site";
 
 export const metadata = { title: "About - VocalFace", description: "Why VocalFace exists, and what is real today.", alternates: { canonical: "/about" } };
 export default function Page() {
@@ -16,6 +17,8 @@ export default function Page() {
         <h2>Principles</h2>
         <ul><li>Consent before likeness. Always.</li><li>Say what works and what does not.</li><li>Keep every stage swappable.</li></ul>
         <p>Read the <Link href="/changelog">changelog</Link> to see how fast it moves, or the <Link href="/docs">docs</Link> to try it.</p>
+        <h2>Contact</h2>
+        <p>VocalFace is built by Evolune EdgeTech LLP. For sales, support, partnerships, press or investment, email <a href={`mailto:${CONTACT_EMAIL}`}>{CONTACT_EMAIL}</a>.</p>
       </Prose>
       <FinalCTA />
     </Shell>

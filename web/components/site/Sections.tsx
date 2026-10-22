@@ -7,6 +7,7 @@ import Reveal from "./Reveal";
 import { CodeMock, ConsentMock, ConversationMock, KnowledgeMock, LatencyBars } from "./Mockups";
 import HowItWorks from "./HowItWorks";
 import { useCases } from "@/lib/usecases";
+import { CONTACT_EMAIL } from "@/lib/site";
 
 const wrap = "mx-auto w-full max-w-7xl px-5";
 const H2 = ({ children, light }: { children: React.ReactNode; light?: boolean }) => <h2 className={`font-display text-4xl leading-[1.05] sm:text-5xl md:text-6xl ${light ? "text-ink" : "text-white"}`}>{children}</h2>;
@@ -247,13 +248,13 @@ export function Footer() {
     ["Product", [["Conversations", "/#product"], ["Replicas", "/#product"], ["Video generation", "/#product"], ["Compare", "/compare"], ["Alternatives", "/alternatives"], ["What is conversational video AI", "/guides/what-is-conversational-video-ai"], ["Choosing an AI avatar API", "/guides/choosing-a-real-time-ai-avatar-api"], ["Roadmap", "/#roadmap"]]],
     ["Use cases", useCases.map((u) => [u.name, `/use-cases/${u.slug}`])],
     ["Developers", [["Docs", "/docs"], ["API reference", "/docs/api"], ["Self-host", "/docs/deploy"], ["API keys", "/dashboard/keys"], ["Changelog", "/changelog"]]],
-    ["Company", [["Pricing", "/pricing"], ["About", "/about"], ["Pitch", "/pitch"], ["Security", "/security"], ["Terms", "/terms"], ["Privacy", "/privacy"]]],
+    ["Company", [["Pricing", "/pricing"], ["About", "/about"], ["Pitch", "/pitch"], ["Contact", `mailto:${CONTACT_EMAIL}`], ["Security", "/security"], ["Terms", "/terms"], ["Privacy", "/privacy"]]],
   ] as const;
   return (
     <footer className="border-t border-white/10 bg-ink-2 pb-10 pt-16"><div className={wrap}>
       <div className="grid gap-10 sm:grid-cols-2 lg:grid-cols-[1.4fr_repeat(4,1fr)]">
         <div><Link href="/" aria-label="VocalFace home"><Logo className="text-white" /></Link><p className="mt-3 max-w-xs text-sm text-gray-400">Open-core conversational video AI. Self-host it or use the API.</p><p className="mt-2 max-w-xs text-xs text-gray-400">A product of Evolune EdgeTech LLP.</p></div>
-        {cols.map(([t, l]) => <nav key={t} aria-label={t}><p className="font-mono text-xs uppercase tracking-widest text-gray-400">{t}</p><ul className="mt-4 space-y-2.5">{l.map(([a, h]) => <li key={a}><Link href={h} className="text-sm text-gray-300 hover:text-white">{a}</Link></li>)}</ul></nav>)}
+        {cols.map(([t, l]) => <nav key={t} aria-label={t}><p className="font-mono text-xs uppercase tracking-widest text-gray-400">{t}</p><ul className="mt-4 space-y-2.5">{l.map(([a, h]) => <li key={a}>{h.startsWith("mailto:") ? <a href={h} className="text-sm text-gray-300 hover:text-white">{a}</a> : <Link href={h} className="text-sm text-gray-300 hover:text-white">{a}</Link>}</li>)}</ul></nav>)}
       </div>
       <div className="mt-14 flex flex-col justify-between gap-3 border-t border-white/10 pt-6 text-xs text-gray-400 sm:flex-row"><div className="space-y-1"><p>&copy; 2026 Evolune EdgeTech LLP. VocalFace is a product of Evolune EdgeTech LLP. All rights reserved.</p><TrademarkNote /></div><p>Replicas require the explicit, revocable consent of the person depicted.</p></div>
     </div></footer>

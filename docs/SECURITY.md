@@ -57,3 +57,6 @@ Checked on a live server and in Chromium. Findings fixed: `/static/playground.ht
 4. Download the speaker model (`make models`); production returns 503 `voice_unavailable` for consent without it (fail closed).
 5. Tune `VOCALFACE_VOICE_MATCH_THRESHOLD` on your own consenting users before launch.
 6. Back up DB + data together; test a restore.
+
+## Reporting a vulnerability
+Email evoluneai@gmail.com with the subject "Security". Please do not open a public issue or disclose details before we reply. The site also publishes `/.well-known/security.txt`.
