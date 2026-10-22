@@ -199,10 +199,26 @@ class Session:
         self._jobs: set[asyncio.Task] = set()
         self.started = time.monotonic()
         self.metrics: dict[str, float] = {}
+        # A reply that must be heard in full (an announced recording or a spoken AI disclosure): while it is produced and
+        # until its audio has played (in mic frames, like the echo model), speech does not cut it off; a turn the user
+        # finishes meanwhile is answered right after it.
+        self.protect_reply = False
+        self._protect_until = -1    # mic-frame index where the protected audio stops playing (echo model)
+        self._protect_wall = 0.0    # the same moment on the wall clock: protection ends even if the mic stops sending
 
     async def send_bytes(self, b: bytes) -> None:
         self.echo.add_agent(b)
+        if self.protect_reply:
+            self._protect_until = self.echo.start + len(self.echo.agent)  # mic-frame index where this audio stops playing
+            self._protect_wall = max(time.monotonic(), self._protect_wall) + len(b) / 48000.0
         await self._send_bytes_raw(b)
+
+    @property
+    def protected(self) -> bool:
+        return self.protect_reply or (self.echo.m <= self._protect_until and time.monotonic() < self._protect_wall + 2.0)
+
+    def cancel_protection(self) -> None:
+        self.protect_reply, self._protect_until, self._protect_wall = False, -1, 0.0
 
     # ---- helpers ----
     @property
@@ -260,7 +276,7 @@ class Session:
                 del self._utt[:len(self._utt) // 2]
             self._speech_run += 1
             need = BARGE_IN_FRAMES_ECHO if self._echo_flag and self.barge_frames < BARGE_IN_FRAMES_ECHO else self.barge_frames
-            if talking and self._speech_run >= need:
+            if talking and self._speech_run >= need and not self.protected:
                 await self._barge()
         else:
             self._speech_run = 0
@@ -327,7 +343,7 @@ class Session:
     async def ptt_down(self) -> None:
         if not self.ptt or self._ptt_down:
             return
-        if self.agent_speaking or self.echo.agent_audible(ECHO_TAIL_FRAMES):
+        if (self.agent_speaking or self.echo.agent_audible(ECHO_TAIL_FRAMES)) and not self.protected:
             await self._barge()
         self._ptt_down, self._utt = True, []
         await self.send_json({"type": "speech_start"})
@@ -354,8 +370,25 @@ class Session:
             await self.send_json({"type": "interrupted"})
 
     async def _start_turn(self, pcm: bytes, spec: asyncio.Task | None = None) -> None:
+        if self.protected:  # a notice that must be heard in full is still playing: answer right after it, not over it
+            self._spawn(self._start_turn_after_protected(pcm, spec))
+            return
         await self.interrupt()  # a new final user turn always supersedes a running reply
         self.reply_task = asyncio.create_task(self._reply(pcm, spec))
+
+    async def _start_turn_after_protected(self, pcm: bytes, spec: asyncio.Task | None) -> None:
+        deadline = time.monotonic() + 30  # safety cap: never hold a user's turn back for long
+        while self.protected and time.monotonic() < deadline:
+            t = self.reply_task
+            if self.protect_reply and t is not None and not t.done():
+                try:
+                    await asyncio.wait_for(asyncio.shield(t), max(0.1, deadline - time.monotonic()))
+                except BaseException:  # noqa: BLE001 - finished, cancelled or timed out: re-check
+                    pass
+            else:
+                await asyncio.sleep(0.05)
+        self.cancel_protection()
+        await self._start_turn(pcm, spec)
 
     # ---- audio out: lip-sync render + send ----
     async def _emit_audio(self, chunk: bytes) -> None:
@@ -606,6 +639,7 @@ class Session:
         except Exception as e:
             await self.send_json({"type": "error", "message": f"{type(e).__name__}: {e}"[:300]})
         finally:
+            self.protect_reply = False  # produced (or cancelled): its queued audio stays protected via _protect_until
             if said:
                 self.history.append({"role": "assistant", "content": text})
 

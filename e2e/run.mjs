@@ -247,6 +247,61 @@ try {
     return `first-frame latency ${r.lat} ms, ${r.L.speakingFrames} speaking frames`;
   }, { skip: needLive });
 
+  // ---------- 4b. recorded call: AI badge, Recording flag, captions, a real MP4 + WebVTT (app/recording.py) ----------
+  await step('recorded call: AI badge, Recording flag, captions, MP4 + captions file', async () => {
+    need(S.personaId, 'persona step');
+    const reset = () => api.put(`/v1/personas/${S.personaId}/privacy`, key(), { record_conversations: false, ai_disclosure: 'badge' }).catch(() => {});
+    try {
+      await api.put(`/v1/personas/${S.personaId}/privacy`, key(), { record_conversations: true, ai_disclosure: 'spoken' });
+      const cv = await api.post('/v1/conversations', key(), { persona_id: S.personaId });
+      const qwav = path.join(work, 'q_rec.wav');
+      H.tts('What can you help me with?', 'af_heart', qwav, 1.0, 22, 4);
+      const lb = await chromium.launch({ args: [...BROWSER_ARGS, '--use-file-for-fake-audio-capture=' + qwav] });
+      const errs = [];
+      let seen;
+      try {
+        const { p } = await newPage(lb, 1000, 1000, errs);
+        await p.goto(`${API}/static/playground.html?cid=${cv.id}&api_key=${key()}`); await p.waitForSelector('#go', { timeout: 20000 });
+        await p.click('#go');
+        const state = () => p.evaluate(() => ({ ai: !document.getElementById('mx-ai').hidden, rec: !document.getElementById('mx-recf').hidden,
+          cap: document.getElementById('mx-cap').textContent, log: document.getElementById('log').innerText }));
+        try {
+          seen = await until(async () => {
+            const o = await state();
+            const after = o.log.split(/being recorded\.?/i).slice(1).join(' ');
+            return o.ai && o.rec && /I'm an AI assistant/i.test(o.log) && /Agent:/.test(after) ? o : false;
+          }, { timeout: 150000, every: 500, what: 'AI badge + Recording flag + spoken notice + an answer' });
+        } catch (e) {
+          await p.screenshot({ path: path.join(ART, 'FAIL-recorded-call.png') }).catch(() => {});
+          throw new Error(`${e.message}\n  page state: ${JSON.stringify(await state().catch(() => ({}))).slice(0, 700)}\n  browser errors: ${errs.join(' | ') || 'none'}`);
+        }
+        await p.screenshot({ path: path.join(ART, 'recorded-call.png') });
+        await p.click('#stop').catch(() => {});
+        await sleep(1500);
+        check(!errs.length, 'browser errors: ' + errs.join(' | '));
+      } finally { await lb.close(); }
+      await api.post(`/v1/conversations/${cv.id}/end`, key());
+      const rec = await until(async () => {
+        const r = await api.get(`/v1/conversations/${cv.id}/recording`, key());
+        return r.status === 'ready' || r.status === 'error' ? r : false;
+      }, { timeout: 180000, every: 1000, what: 'recording ready' });
+      check(rec.status === 'ready', 'recording failed: ' + rec.error);
+      check(rec.kind === 'video', 'a persona with a face should give a video recording, got ' + rec.kind);
+      const file = path.join(ART, 'recording.mp4');
+      const buf = Buffer.from(await (await fetch(API + rec.recording_url)).arrayBuffer());
+      fs.writeFileSync(file, buf);
+      const probe = JSON.parse(execFileSync('ffprobe', ['-v', 'error', '-show_entries', 'format=duration:format_tags:stream=codec_type', '-of', 'json', file]).toString());
+      const kinds = probe.streams.map((x) => x.codec_type);
+      check(kinds.includes('video') && kinds.includes('audio'), 'recording lacks audio or video: ' + kinds.join(','));
+      check(/AI agent/i.test(JSON.stringify(probe.format.tags || {})), 'recording has no AI provenance label');
+      const vtt = await (await fetch(API + rec.captions_url)).text();
+      check(/^WEBVTT/.test(vtt) && /being recorded/i.test(vtt), 'captions are missing the recording notice');
+      const unsigned = await fetch(`${API}/v1/files/recordings/${cv.id}/recording.mp4`);
+      check(unsigned.status === 403, 'an unsigned recording link must be refused, got ' + unsigned.status);
+      return `${rec.duration_s}s video, ${Math.round(buf.length / 1024)} KB, ${(vtt.match(/-->/g) || []).length} caption cues; captions shown in-call: "${(seen.cap || '').slice(0, 40)}"`;
+    } finally { await reset(); } // later steps expect the persona's default privacy settings
+  }, { skip: needLive });
+
   // ---------- 5. video generation (queued now, awaited later: LivePortrait is slow on a Mac) ----------
   await step('video generation submitted', async () => {
     need(S.replicaId, 'replica step');

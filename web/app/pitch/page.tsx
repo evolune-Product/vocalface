@@ -16,7 +16,7 @@ const shell = "mx-auto w-full max-w-5xl px-5";
 const h2 = "font-display text-3xl text-white md:text-4xl";
 
 const proof: [string, string][] = [
-  ["447", "backend tests passing, plus a 13-step browser end-to-end suite"],
+  ["467", "backend tests passing, plus a 14-step browser end-to-end suite"],
   ["1.4 to 1.9 s", "from the end of speech to first lip movement, warm, on a MacBook (M1 Pro). A measurement, not a guarantee"],
   ["8", "ready-made agent templates: sales demo, support, tutoring, intake and more"],
   ["0", "customers and $0 revenue. We say so up front"],

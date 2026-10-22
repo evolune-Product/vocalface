@@ -338,3 +338,107 @@ def test_finished_recording_is_tagged(env):
 
     final = recording.final_path(jobs.DATA_DIR, cc, "audio")
     assert final.exists() and provenance.read_tags(final).get("vocalface_provenance") == "recording"
+
+
+def _protect_run(notice_chunks: int, feed_quiet: int):
+    """Session-level: a protected notice of `notice_chunks` x 0.2 s; the user talks over it for 0.6 s, then is quiet."""
+    from app.pipeline.session import Session
+
+    from .test_realtime import LOUD, QUIET
+
+    events = []
+
+    async def sj(m):
+        events.append(("json", m.get("type"), m.get("text")))
+
+    async def sb(b):
+        events.append(("bytes", len(b), None))
+
+    class Stt:
+        async def transcribe(self, pcm, sr):
+            return "hello there"
+
+    class Llm:
+        async def stream(self, system, history, user):
+            yield "Hi, how can I help?"
+
+    class Tts:
+        async def synthesize(self, text, voice):
+            for _ in range(notice_chunks if "recorded" in text else 2):
+                await asyncio.sleep(0.005)
+                yield b"\x01\x00" * 4800
+
+    prov = type("P", (), {"stt": Stt(), "llm": Llm(), "tts": Tts()})()
+
+    async def run():
+        sess = Session(prov, "sys", "v", sj, sb)
+        sess.protect_reply = True
+        await sess.say("This conversation is being recorded.")
+        await asyncio.sleep(0.05)
+        for _ in range(30):  # the user talks over the notice (600 ms)
+            await sess.feed(LOUD)
+        # then quiet, streamed like a real client (the mic never stops sending): the turn ends while the notice is
+        # still playing, and the answer has to come after it
+        for _ in range(feed_quiet):
+            await sess.feed(QUIET)
+            await asyncio.sleep(0.004)
+            if sum(1 for e in events if e[1] == "agent_done") >= 2:
+                break
+        return sess
+
+    asyncio.run(run())
+    return events
+
+
+@pytest.fixture()
+def _no_echo_model(monkeypatch):
+    """The echo model rightly treats a synthetic square wave during agent audio as echo; these tests need it to be 'speech'."""
+    from app.pipeline import echo, session as sess_mod
+    from app.pipeline.session import Providers
+
+    monkeypatch.setattr(echo, "ENABLED", False)
+    sess_mod.set_provider_factory(lambda spec="": Providers(None, None, None))  # => the dependency-free energy VAD
+    yield
+    sess_mod.set_provider_factory(None)
+
+
+def test_protected_notice_is_never_cut_off_and_the_user_is_answered_after_it(_no_echo_model):
+    ev = _protect_run(notice_chunks=15, feed_quiet=1500)  # 3 s notice; the turn ends while it is still playing
+    kinds = [e[1] for e in ev if e[0] == "json"]
+    texts = [e[2] for e in ev if e[0] == "json" and e[1] == "transcript"]
+    assert "interrupted" not in kinds
+    assert texts[0] == "This conversation is being recorded."  # the notice reached the transcript in full
+    assert texts[1:3] == ["hello there", "Hi, how can I help?"]  # and the user's turn was answered after it
+
+
+def test_unprotected_greeting_can_still_be_interrupted(_no_echo_model):
+    from app.pipeline.session import Session
+
+    from .test_realtime import LOUD
+
+    events = []
+
+    async def sj(m):
+        events.append(m.get("type"))
+
+    async def sb(b):
+        pass
+
+    class Tts:
+        async def synthesize(self, text, voice):
+            for _ in range(40):
+                await asyncio.sleep(0.01)
+                yield b"\x01\x00" * 4800
+
+    prov = type("P", (), {"stt": None, "llm": None, "tts": Tts()})()
+
+    async def run():
+        sess = Session(prov, "sys", "v", sj, sb)
+        await sess.say("Welcome to our store, let me tell you about everything we sell.")
+        await asyncio.sleep(0.05)
+        for _ in range(30):
+            await sess.feed(LOUD)
+        await asyncio.sleep(0.05)
+
+    asyncio.run(run())
+    assert "interrupted" in events

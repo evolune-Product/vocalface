@@ -24,4 +24,4 @@ Not tested: real microphone/speakers (fake mic file only), Stripe/Razorpay live 
 concurrency/load, NVIDIA/GPU path (does not exist yet).
 
 ## Status (Oct 5)
-Backend: `cd backend && .venv/bin/python -m pytest -q` runs 447 tests (all passing). End to end: `make e2e` runs 13 steps against a restarted stack (all green; 24 routes at 1440 and 390 px). Not covered: real microphones and phones, Docker, CUDA/NVIDIA, live payments, and subjective face/voice quality (judged by the owner only; see docs/BENCHMARKS.md).
+Backend: `cd backend && .venv/bin/python -m pytest -q` runs 467 tests (all passing, Oct 22). End to end: `make e2e` runs 14 steps (including a recorded call: AI badge, Recording flag, captions, MP4 + WebVTT) against a restarted stack (all green; 24 routes at 1440 and 390 px). Not covered: real microphones and phones, Docker, CUDA/NVIDIA, live payments, and subjective face/voice quality (judged by the owner only; see docs/BENCHMARKS.md).

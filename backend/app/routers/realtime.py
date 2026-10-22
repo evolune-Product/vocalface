@@ -305,6 +305,7 @@ async def _run(ws, cid, acc, conv, persona, db, link, inbox, pump_task, allow_fa
         _lines = _privacy.opening_lines(policy)
         if _lines:
             rt.greeting = f"{_lines} {rt.greeting}".strip()
+            sess.protect_reply = True  # the disclosure / recording notice is always heard in full (pipeline/session.py)
     if rt:
         from ..billing import session_allowance as _allow
 
@@ -343,7 +344,8 @@ async def _run(ws, cid, acc, conv, persona, db, link, inbox, pump_task, allow_fa
                 if not isinstance(m, dict):
                     continue
                 t = m.get("type")
-                if t == "interrupt":
+                if t == "interrupt":  # an explicit stop from the person always works, even during a protected notice
+                    sess.cancel_protection()
                     await sess.interrupt()
                 elif t == "idle_phase":  # client's idle ping-pong index (head-pop-free speech start)
                     sess.set_idle_phase(m.get("phase", 0), m.get("fps", 25))
@@ -387,7 +389,10 @@ async def _run(ws, cid, acc, conv, persona, db, link, inbox, pump_task, allow_fa
             except Exception:  # noqa: BLE001
                 log.exception("recording finish failed")
         try:
-            await sess.close()
+            try:
+                await sess.close()  # may try to tell a client that already left that the reply stopped: harmless
+            except Exception:  # noqa: BLE001
+                pass
             if rt:
                 await rt.stop()
         finally:
