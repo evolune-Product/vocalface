@@ -2,7 +2,7 @@ import type { MetadataRoute } from "next";
 import { useCases } from "@/lib/usecases";
 import { docPages } from "@/lib/docs";
 import { alternatives } from "@/lib/alternatives";
-const site = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
+import { SITE as site } from "@/lib/site";
 // /pitch is deliberately left out (noindex, shared by link).
 export default function sitemap(): MetadataRoute.Sitemap {
   const lastModified = new Date();

@@ -1,13 +1,13 @@
 import "./globals.css";
 import type { Metadata } from "next";
 import { JsonLd, organization, website } from "@/lib/seo";
+import { SITE as site } from "@/lib/site";
 import { Instrument_Serif, Inter, JetBrains_Mono } from "next/font/google";
 
 const display = Instrument_Serif({ subsets: ["latin"], weight: "400", style: ["normal", "italic"], variable: "--font-display" });
 const sans = Inter({ subsets: ["latin"], variable: "--font-sans" });
 const mono = JetBrains_Mono({ subsets: ["latin"], variable: "--font-mono" });
 
-const site = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
 const desc = "Real-time face-to-face AI agents, digital replicas and video generation. Open-core, self-hostable, built to cost less.";
 export const metadata: Metadata = {
   metadataBase: new URL(site),

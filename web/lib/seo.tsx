@@ -1,4 +1,5 @@
-export const SITE = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
+import { SITE } from "./site";
+export { SITE };
 export const ORG = "Evolune EdgeTech LLP";
 
 export function JsonLd({ data }: { data: object | object[] }) {
