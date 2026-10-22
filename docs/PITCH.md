@@ -1,5 +1,7 @@
 # VocalFace: pitch draft (internal; numbers marked TODO must be filled with real data before sending)
 
+> **Update 22 October 2026:** the live investor page is `vocalface.com/pitch` (unlisted). New since this document: privacy controls (opt-in recordings with captions, zero data retention, AI disclosure that cannot be talked over, AI-generated labels in generated media), an MCP server for Claude/Cursor, 467 backend tests and a 14-step browser suite including a real recorded call. Why now: EU AI Act Article 50 transparency duties apply since 2 August 2026; real-time avatar API prices have fallen to about $0.01-0.20 a minute; Tavus raised a $40M Series B (CRV, November 2025). Still open: live face on an NVIDIA GPU (benchmark next), no customers, and the open-core licence is not published yet.
+
 ## One line
 Open-core platform for real-time conversational video agents and consent-based digital replicas: use our API, or self-host the whole stack.
 
