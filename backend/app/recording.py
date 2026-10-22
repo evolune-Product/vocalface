@@ -515,6 +515,12 @@ def finish(rec: Recorder, data_dir: Path) -> dict:
             for ext in ("mic.raw", "agent.raw", "frames.bin"):
                 (rec.dir / f"part{rec.part:03d}.{ext}").unlink(missing_ok=True)
             final, vtt, total = join_parts(rec.dir, rec.kind)
+            try:
+                from . import provenance
+
+                provenance.tag_mp4(final, "recording")
+            except Exception:  # noqa: BLE001
+                pass
             for p in (final, vtt):
                 try:
                     storage.publish(p)

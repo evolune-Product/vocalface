@@ -306,3 +306,35 @@ def test_zero_data_retention_keeps_no_content(env):
         assert s.exec(select(TranscriptTurn).where(TranscriptTurn.conversation_id == cc)).all() == []
         o = s.exec(select(ObjectiveProgress).where(ObjectiveProgress.conversation_id == cc)).first()
         assert o is not None and o.completed and o.evidence == "" and json.loads(o.variables) == {}
+
+
+@needs_ffmpeg
+def test_provenance_tags_generated_video_and_recording(tmp_path):
+    from app import provenance
+
+    src = tmp_path / "v.mp4"
+    subprocess.run(["ffmpeg", "-y", "-loglevel", "error", "-f", "lavfi", "-i", "testsrc=size=64x48:rate=25:duration=1",
+                    "-f", "lavfi", "-i", "sine=frequency=440:duration=1", "-c:v", "libx264", "-pix_fmt", "yuv420p", "-c:a", "aac",
+                    "-shortest", str(src)], check=True)
+    size_before = src.stat().st_size
+    assert provenance.tag_mp4(src, "generated")
+    tags = provenance.read_tags(src)
+    assert "AI-generated" in tags.get("comment", "") and tags.get("vocalface_provenance") == "generated"
+    assert abs(src.stat().st_size - size_before) < 4096  # a stream copy, not a re-encode
+    assert provenance.tag_mp4(tmp_path / "missing.mp4") is False
+
+
+@needs_ffmpeg
+def test_finished_recording_is_tagged(env):
+    c, key, _ = env
+    pid = _pid(c, key)
+    c.put(f"/v1/personas/{pid}/privacy", json={"record_conversations": True}, headers=H(key))
+    cc = c.post("/v1/conversations", json={"persona_id": pid}, headers=H(key)).json()["id"]
+    with c.websocket_connect(f"/v1/conversations/{cc}/stream?api_key={key}") as ws:
+        ws.receive_json()
+        collect(ws, "agent_done")
+    recording.wait_all(60)
+    from app import provenance
+
+    final = recording.final_path(jobs.DATA_DIR, cc, "audio")
+    assert final.exists() and provenance.read_tags(final).get("vocalface_provenance") == "recording"

@@ -352,6 +352,12 @@ def process_video(vid: str, deps: Deps) -> bool:
                 timings["render"] = round(time.time() - t, 2)
                 if not res.get("ok") or not video_path(vid).exists():
                     raise RuntimeError(res.get("error", "render failed"))
+            try:  # machine-readable "AI-generated" label in the MP4 metadata (provenance.py); never fails the job
+                from . import provenance
+
+                provenance.tag_mp4(video_path(vid), "generated")
+            except Exception:  # noqa: BLE001
+                pass
             storage.publish(video_path(vid))
         except Exception as e:  # noqa: BLE001
             err = f"{type(e).__name__}: {e}"
